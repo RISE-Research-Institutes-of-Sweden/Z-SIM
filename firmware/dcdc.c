@@ -24,6 +24,14 @@ static adcsample_t samples[2];
 static unsigned int input_vsense = 0;
 static unsigned int rail_vsense = 0; 
 
+
+/* ================================================= */
+/*  ADC Channels on the z-SIM board                  */
+/*  PA0 */
+/*  */
+/*  */
+
+/*
 static void adccallback(ADCDriver *adcp) {
 
   (void) adcp;
@@ -35,6 +43,7 @@ static void adccallback(ADCDriver *adcp) {
   rail_vsense  = samples[1]; 
   
 }
+
 
 static const ADCConversionGroup adcgrpcfg = {
   TRUE, // TODO: Lookup what this means
@@ -52,8 +61,76 @@ static const ADCConversionGroup adcgrpcfg = {
   0, // SQR2: Sequence for channel >= 10 
   ADC_SQR3_SQ2_N(ADC_CHANNEL_IN3) | ADC_SQR3_SQ1_N(ADC_CHANNEL_IN2)
 }; 
+*/
+
   
-  
+/*===========================================================================*/
+/* ADC related code based on demo                                            */
+/* https://www.playembedded.org/blog/reading-a-slider/                       */
+/*===========================================================================*/
+/*
+ * In this demo we want to use a single channel to sample voltage across
+ * the potentiometer.
+ */
+#define MY_NUM_CH                                              1
+#define MY_SAMPLING_NUMBER                                     1
+
+static adcsample_t sample_buff[MY_NUM_CH * MY_SAMPLING_NUMBER];
+
+/*
+ * ADC conversion group.
+ * Mode:        Linear buffer, 10 samples of 1 channel, SW triggered.
+ * Channels:
+ * IN0 (PA0) = I_SENSE = PA0_SHUNT1  ADC123
+ */
+static const ADCConversionGroup ADC1_conversion_group = {
+  FALSE,                            /*NOT CIRCULAR*/
+  MY_NUM_CH,                        /*NUMB OF CH*/
+  NULL,                             /*NO ADC CALLBACK*/
+  NULL,                             /*NO ADC ERROR CALLBACK*/
+  0,                                /* CR1 */
+  ADC_CR2_SWSTART,                  /* CR2 */
+  0,                                /* SMPR1 */
+  ADC_SMPR2_SMP_AN0(ADC_SAMPLE_144),/* SMPR2 */
+  0,                                /* HTR */
+  0,                                /* LTR */
+  0,                                /* SQR1 */
+  0,                                /* SQR2 */
+  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN0)  /* SQR3 */
+};
+
+static const ADCConversionGroup ADC2_conversion_group = {
+  FALSE,                            /*NOT CIRCULAR*/
+  MY_NUM_CH,                        /*NUMB OF CH*/
+  NULL,                             /*NO ADC CALLBACK*/
+  NULL,                             /*NO ADC ERROR CALLBACK*/
+  0,                                /* CR1 */
+  ADC_CR2_SWSTART,                  /* CR2 */
+  0,                                /* SMPR1 */
+  ADC_SMPR2_SMP_AN1(ADC_SAMPLE_144),/* SMPR2 */
+  0,                                /* HTR */
+  0,                                /* LTR */
+  0,                                /* SQR1 */
+  0,                                /* SQR2 */
+  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN1)  /* SQR3 */
+};
+
+static const ADCConversionGroup ADC3_conversion_group = {
+  FALSE,                            /*NOT CIRCULAR*/
+  MY_NUM_CH,                        /*NUMB OF CH*/
+  NULL,                             /*NO ADC CALLBACK*/
+  NULL,                             /*NO ADC ERROR CALLBACK*/
+  0,                                /* CR1 */
+  ADC_CR2_SWSTART,                  /* CR2 */
+  0,                                /* SMPR1 */
+  ADC_SMPR2_SMP_AN2(ADC_SAMPLE_144),/* SMPR2 */
+  0,                                /* HTR */
+  0,                                /* LTR */
+  0,                                /* SQR1 */
+  0,                                /* SQR2 */
+  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN2)  /* SQR3 */
+};
+
  
 
 void dcdc_init(void) {
