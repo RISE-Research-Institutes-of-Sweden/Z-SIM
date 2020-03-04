@@ -1,5 +1,7 @@
 /*
-    Copyright 2019 Joel Svensson	svenssonjoel@yahoo.se
+    Copyright 2019/2020   Joel Svensson	svenssonjoel@yahoo.se
+                          Anders Thorsén thorsenanders@yahoo.com
+
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,12 +19,23 @@
 
 #include "dcdc.h"
 
+#define Rshunt 10.0e-3
+
+
 static unsigned char dcdc_vsel; 
 
 static adcsample_t samples[2];
 
 static unsigned int input_vsense = 0;
-static unsigned int rail_vsense = 0; 
+static unsigned int rail_vsense = 0;
+
+static bool flag_ADC1 = FALSE;
+static bool flag_ADC2 = FALSE;
+static bool flag_ADC3 = FALSE;
+static float lastvalue_ADC1;
+static float lastvalue_ADC2;
+static float lastvalue_ADC3;
+
 
 
 /* ================================================= */
@@ -72,13 +85,19 @@ static const ADCConversionGroup adcgrpcfg = {
  * In this demo we want to use a single channel to sample voltage across
  * the potentiometer.
  */
-#define MY_NUM_CH                                              1
-#define MY_SAMPLING_NUMBER                                     1
+#define MY_NUM_CH_ADC1  1
+#define MY_NUM_CH_ADC2  2
+#define MY_NUM_CH_ADC3  1
+#define MY_SAMPLING_NUMBER_ADC1  1
+#define MY_SAMPLING_NUMBER_ADC2  1
+#define MY_SAMPLING_NUMBER_ADC3  1
 
-static adcsample_t sample_buff[MY_NUM_CH * MY_SAMPLING_NUMBER];
+static adcsample_t sample_buff_ADC1[MY_NUM_CH_ADC1 * MY_SAMPLING_NUMBER_ADC1];
+static adcsample_t sample_buff_ADC2[MY_NUM_CH_ADC2 * MY_SAMPLING_NUMBER_ADC2];
+static adcsample_t sample_buff_ADC3[MY_NUM_CH_ADC3 * MY_SAMPLING_NUMBER_ADC3];
 
 /*
- * ADC conversion group.
+ * ADC conversion group3, one for each ADC
  * Mode:        Linear buffer, 10 samples of 1 channel, SW triggered.
  * Channels:
  * ADC123 IN0  (PA0) = PA0_SHUNT1 = I_SENSE, TP_I1   
@@ -109,12 +128,12 @@ static const ADCConversionGroup ADC1_conversion_group = {
   0,                                /* CR1 */
   ADC_CR2_SWSTART,                  /* CR2 */
   0,                                /* SMPR1 */
-  ADC_SMPR2_SMP_AN0(ADC_SAMPLE_144),/* SMPR2 */
+  ADC_SMPR2_SMP_AN0(ADC_SAMPLE_3),/* SMPR2 */
   0,                                /* HTR */
   0,                                /* LTR */
   0,                                /* SQR1 */
   0,                                /* SQR2 */
-  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN0)  /* SQR3 */
+  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN0)  /* SQR3 */ /*I_SENSE*/
 };
 
 static const ADCConversionGroup ADC2_conversion_group = {
@@ -125,12 +144,14 @@ static const ADCConversionGroup ADC2_conversion_group = {
   0,                                /* CR1 */
   ADC_CR2_SWSTART,                  /* CR2 */
   0,                                /* SMPR1 */
-  ADC_SMPR2_SMP_AN1(ADC_SAMPLE_144),/* SMPR2 */
+  ADC_SMPR2_SMP_AN2(ADC_SAMPLE_3) |
+  ADC_SMPR2_SMP_AN3(ADC_SAMPLE_3),  /* SMPR2 */
   0,                                /* HTR */
   0,                                /* LTR */
   0,                                /* SQR1 */
   0,                                /* SQR2 */
-  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN1)  /* SQR3 */
+  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN2) |             /*RAIL_DIV*/
+  ADC_SQR3_SQ2_N(ADC_CHANNEL_IN3)  /* SQR3 */   /*PWR_DIV*/
 };
 
 static const ADCConversionGroup ADC3_conversion_group = {
@@ -140,22 +161,115 @@ static const ADCConversionGroup ADC3_conversion_group = {
   NULL,                             /*NO ADC ERROR CALLBACK*/
   0,                                /* CR1 */
   ADC_CR2_SWSTART,                  /* CR2 */
-  0,                                /* SMPR1 */
-  ADC_SMPR2_SMP_AN2(ADC_SAMPLE_144),/* SMPR2 */
+  ADC_SMPR1_SMP_AN12(ADC_SAMPLE_3) |
+  ADC_SMPR1_SMP_AN13(ADC_SAMPLE_3,  /* SMPR1 */
+  0,                                /* SMPR2 */
   0,                                /* HTR */
   0,                                /* LTR */
   0,                                /* SQR1 */
   0,                                /* SQR2 */
-  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN2)  /* SQR3 */
+  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN12) |              /*ADC_EXTRA_PIN2*/
+  ADC_SQR3_SQ2_N(ADC_CHANNEL_IN13)  /* SQR3 */    /*ADC_EXTRA_PIN3*/
 };
 
- 
+/*===========================================================================*/
+/*  ADC1 thread                                                              */
+/*===========================================================================*/
+
+static THD_WORKING_AREA(waThdADC1, 512);
+  static THD_FUNCTION(ThdADC1, arg) {
+  unsigned ii;
+  int32_t mean;
+  (void) arg;
+  chRegSetThreadName("ADC1 handler");
+  /*
+    * Activates the ADC1 driver.
+    */
+  adcStart(&ADCD1, NULL);
+  while(TRUE) {
+    adcConvert(&ADCD1, &ADC1_conversion_group, sample_buff_ADC1, MY_SAMPLING_NUMBER_ADC1);
+
+    /* Making mean of sampled values. Note that samples refers to OTA and OTB
+        but since they we are looking for Rcm (common mode) we can make a simple
+        mean */
+    mean = 0;
+    for (ii = 0; ii < MY_NUM_CH_ADC1 * MY_SAMPLING_NUMBER_ADC1; ii++) {
+      mean += sample_buff_ADC1[ii];
+    }
+    mean /= MY_NUM_CH_ADC1 * MY_SAMPLING_NUMBER_ADC1;
+    lastvalue_ADC1 = (float)mean;
+    flag_ADC1 = TRUE;
+  }
+}
+
+/*===========================================================================*/
+/*  ADC2 thread                                                              */
+/*===========================================================================*/
+
+static THD_WORKING_AREA(waThdADC2, 512);
+  static THD_FUNCTION(ThdADC2, arg) {
+  unsigned ii;
+  int32_t mean;
+  (void) arg;
+  chRegSetThreadName("ADC2 handler");
+  /*
+    * Activates the ADC2 driver.
+    */
+  adcStart(&ADCD2, NULL);
+  while(TRUE) {
+    adcConvert(&ADCD2, &ADC2_conversion_group, sample_buff_ADC2, MY_SAMPLING_NUMBER_ADC2);
+
+    /* Making mean of sampled values. Note that samples refers to OTA and OTB
+        but since they we are looking for Rcm (common mode) we can make a simple
+        mean */
+    mean = 0;
+    for (ii = 0; ii < MY_NUM_CH_ADC2 * MY_SAMPLING_NUMBER_ADC2; ii++) {
+      mean += sample_buff_ADC2[ii];
+    }
+    mean /= MY_NUM_CH_ADC2 * MY_SAMPLING_NUMBER_ADC2;
+    lastvalue_ADC2 = (float)mean;
+    flag_ADC2 = TRUE;
+  }
+}
+
+/*===========================================================================*/
+/*  ADC3 thread                                                              */
+/*===========================================================================*/
+static THD_WORKING_AREA(waThdADC3, 512);
+  static THD_FUNCTION(ThdADC3, arg) {
+  unsigned ii;
+  int32_t mean;
+  (void) arg;
+  chRegSetThreadName("ADC3 handler");
+  /*
+    * Activates the ADC3 driver.
+    */
+  adcStart(&ADCD3, NULL);
+  while(TRUE) {
+    adcConvert(&ADCD3, &ADC3_conversion_group, sample_buff_ADC3, MY_SAMPLING_NUMBER_ADC3);
+
+    /* Making mean of sampled values. Note that samples refers to OTA and OTB
+        but since they we are looking for Rcm (common mode) we can make a simple
+        mean */
+    mean = 0;
+    for (ii = 0; ii < MY_NUM_CH_ADC3 * MY_SAMPLING_NUMBER_ADC3; ii++) {
+      mean += sample_buff_ADC3[ii];
+    }
+    mean /= MY_NUM_CH_ADC3 * MY_SAMPLING_NUMBER_ADC3;
+    lastvalue_ADC3 = (float)mean;
+    flag_ADC3 = TRUE;
+  }
+}
+
 
 void dcdc_init(void) {
 
   dcdc_vsel = 1; 
 
   // Analog inputs
+
+  /* Remove?
+  ==============================================================
   palSetPadMode(INPUT_VSENSE_GPIO,
 		INPUT_VSENSE_PIN,
 		PAL_MODE_INPUT_ANALOG);
@@ -166,9 +280,31 @@ void dcdc_init(void) {
   // 
   // ADC123_IN2 - GPIOA pin 2
   // ADC123_IN3 - GPIOA pin 3
+  ===============================================================
+  */
 
-  adcStart(&ADCD1, NULL);
-  adcStartConversion(&ADCD1, &adcgrpcfg, samples, 2);
+  /*
+   * Setting up analog inputs
+   */
+  
+  /* Possilble alternative set-up?
+  palSetGroupMode(GPIOA, PAL_PORT_BIT(0) | PAL_PORT_BIT(2) | PAL_PORT_BIT(3),
+                  0, PAL_MODE_INPUT_ANALOG);
+  palSetGroupMode(GPIOC, PAL_PORT_BIT(2) | PAL_PORT_BIT(3),
+                  0, PAL_MODE_INPUT_ANALOG);
+  */
+
+  palSetPadMode(GPIOA, 1, PAL_MODE_INPUT_ANALOG);
+  palSetPadMode(GPIOA, 2, PAL_MODE_INPUT_ANALOG);
+  palSetPadMode(GPIOA, 3, PAL_MODE_INPUT_ANALOG);
+  
+  palSetPadMode(GPIOC, 2, PAL_MODE_INPUT_ANALOG);
+  palSetPadMode(GPIOC, 3, PAL_MODE_INPUT_ANALOG);
+
+
+  chThdCreateStatic(waThdADC1, sizeof(waThdADC1), NORMALPRIO + 1, ThdADC1, NULL);
+  chThdCreateStatic(waThdADC2, sizeof(waThdADC2), NORMALPRIO + 1, ThdADC1, NULL);
+  chThdCreateStatic(waThdADC3, sizeof(waThdADC3), NORMALPRIO + 1, ThdADC1, NULL);
   
   // Digital outputs
   palSetPadMode(VSEL_GPIO,
@@ -243,4 +379,20 @@ void dcdc_disable(void) {
 	      DCDC_OUTPUT_ENABLE_PIN,
 	      0);
   
+}
+
+float R_voltage(float current, float resistance) {
+
+   return 1000*current*(resistance-Rshunt);
+}
+
+float C_voltage(float current, float Ii_t_ack, float capacitance) {
+
+    return 1/capacitance*Ii_t_ack-current*Rshunt;
+}
+
+
+float L_voltage(float current, float prevCurrent, float inductance, float resistance, float dt) {
+
+    return current*(resistance-Rshunt) + inductance*(current-prevCurrent/dt);
 }
