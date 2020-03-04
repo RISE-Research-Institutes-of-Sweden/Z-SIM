@@ -81,7 +81,25 @@ static adcsample_t sample_buff[MY_NUM_CH * MY_SAMPLING_NUMBER];
  * ADC conversion group.
  * Mode:        Linear buffer, 10 samples of 1 channel, SW triggered.
  * Channels:
- * IN0 (PA0) = I_SENSE = PA0_SHUNT1  ADC123
+ * ADC123 IN0  (PA0) = PA0_SHUNT1 = I_SENSE, TP_I1   
+ * ADC123 IN1  (PA1) = PA1_SHUNT2 = I_SENSE_4T, TP_I2
+ * ADC123 IN2  (PA2) = PA2_DCDC_RAIL = RAIL_DIV
+ * ADC123 IN3  (PA3) = PA3_DCDC_IN = PWR_DIV
+ * (ADC12  IN4  (PA4) = PA4_DAC1)
+ * (ADC12  IN5  (PA5) = PA5_DAC2)
+ * (ADC12  IN6  (PA6) = PA6_ES1)
+ * (ADC12  IN7  (PA7) = PA7_ES2)
+ * (ADC12  IN8  (PB0) = PB0_LED_GREEM)
+ * (ADC12  IN9  (PB1) = PB1_LED_RED)
+ * ADC123 IN10 (PC0) = PC0_TEMP1 = TEMP1_J2
+ * ADC123 IN11 (PC1) = PC1_TEMP2 = TEMP1_J3
+ * ADC123 IN12 (PC2) = PC2_ADC123_12 = ADC_EXTRA_PIN2
+ * ADC123 IN13 (PC3) = PC3_ADC123_13 = ADC_EXTRA_PIN3
+ * (ADC12  IN14 (PC4) = NC)
+ * (ADC12  IN15 (PC5) = NC)
+ * ADC1   SENSOR = Internal Temperature sensor
+ * ADC1   VREFINT =Internal reference)
+ * ADC1   VBAT = VBAT
  */
 static const ADCConversionGroup ADC1_conversion_group = {
   FALSE,                            /*NOT CIRCULAR*/
