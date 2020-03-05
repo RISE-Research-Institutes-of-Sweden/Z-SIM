@@ -29,12 +29,12 @@ static adcsample_t samples[2];
 static unsigned int input_vsense = 0;
 static unsigned int rail_vsense = 0;
 
-static bool flag_ADC1 = FALSE;
-static bool flag_ADC2 = FALSE;
-static bool flag_ADC3 = FALSE;
-static float lastvalue_ADC1;
-static float lastvalue_ADC2;
-static float lastvalue_ADC3;
+bool flag_ADC1 = FALSE;
+bool flag_ADC2 = FALSE;
+bool flag_ADC3 = FALSE;
+float lastvalue_ADC1;
+int32_t lastvalue_ADC2;
+float lastvalue_ADC3;
 
 
 
@@ -88,8 +88,8 @@ static const ADCConversionGroup adcgrpcfg = {
 #define MY_NUM_CH_ADC1  1
 #define MY_NUM_CH_ADC2  2
 #define MY_NUM_CH_ADC3  2
-#define MY_SAMPLING_NUMBER_ADC1  1
-#define MY_SAMPLING_NUMBER_ADC2  1
+#define MY_SAMPLING_NUMBER_ADC1  3
+#define MY_SAMPLING_NUMBER_ADC2  10
 #define MY_SAMPLING_NUMBER_ADC3  1
 
 static adcsample_t sample_buff_ADC1[MY_NUM_CH_ADC1 * MY_SAMPLING_NUMBER_ADC1];
@@ -122,7 +122,7 @@ static adcsample_t sample_buff_ADC3[MY_NUM_CH_ADC3 * MY_SAMPLING_NUMBER_ADC3];
  */
 static const ADCConversionGroup ADC1_conversion_group = {
   FALSE,                            /*NOT CIRCULAR*/
-  MY_NUM_CH,                        /*NUMB OF CH*/
+  MY_NUM_CH_ADC1,                        /*NUMB OF CH*/
   NULL,                             /*NO ADC CALLBACK*/
   NULL,                             /*NO ADC ERROR CALLBACK*/
   0,                                /* CR1 */
@@ -138,7 +138,7 @@ static const ADCConversionGroup ADC1_conversion_group = {
 
 static const ADCConversionGroup ADC2_conversion_group = {
   FALSE,                            /*NOT CIRCULAR*/
-  MY_NUM_CH,                        /*NUMB OF CH*/
+  MY_NUM_CH_ADC2,                        /*NUMB OF CH*/
   NULL,                             /*NO ADC CALLBACK*/
   NULL,                             /*NO ADC ERROR CALLBACK*/
   0,                                /* CR1 */
@@ -156,13 +156,13 @@ static const ADCConversionGroup ADC2_conversion_group = {
 
 static const ADCConversionGroup ADC3_conversion_group = {
   FALSE,                            /*NOT CIRCULAR*/
-  MY_NUM_CH,                        /*NUMB OF CH*/
+  MY_NUM_CH_ADC3,                        /*NUMB OF CH*/
   NULL,                             /*NO ADC CALLBACK*/
   NULL,                             /*NO ADC ERROR CALLBACK*/
   0,                                /* CR1 */
   ADC_CR2_SWSTART,                  /* CR2 */
   ADC_SMPR1_SMP_AN12(ADC_SAMPLE_3) |
-  ADC_SMPR1_SMP_AN13(ADC_SAMPLE_3,  /* SMPR1 */
+  ADC_SMPR1_SMP_AN13(ADC_SAMPLE_3),  /* SMPR1 */
   0,                                /* SMPR2 */
   0,                                /* HTR */
   0,                                /* LTR */
@@ -187,6 +187,7 @@ static THD_WORKING_AREA(waThdADC1, 512);
     */
   adcStart(&ADCD1, NULL);
   while(TRUE) {
+//    chThdSleepMicroseconds(10);
     adcConvert(&ADCD1, &ADC1_conversion_group, sample_buff_ADC1, MY_SAMPLING_NUMBER_ADC1);
 
     /* Making mean of sampled values. Note that samples refers to OTA and OTB
@@ -227,7 +228,9 @@ static THD_WORKING_AREA(waThdADC2, 512);
       mean += sample_buff_ADC2[ii];
     }
     mean /= MY_NUM_CH_ADC2 * MY_SAMPLING_NUMBER_ADC2;
-    lastvalue_ADC2 = (float)mean;
+//    lastvalue_ADC2 = (float)mean;
+//    lastvalue_ADC2 = (int32_t)sample_buff_ADC2[0];
+    lastvalue_ADC2 = (int32_t)mean;
     flag_ADC2 = TRUE;
   }
 }
@@ -301,10 +304,11 @@ void dcdc_init(void) {
   palSetPadMode(GPIOC, 2, PAL_MODE_INPUT_ANALOG);
   palSetPadMode(GPIOC, 3, PAL_MODE_INPUT_ANALOG);
 
+//  chThdCreateStatic(waThdADC1, sizeof(waThdADC1), NORMALPRIO, ThdADC1, NULL);
 
-  chThdCreateStatic(waThdADC1, sizeof(waThdADC1), NORMALPRIO + 1, ThdADC1, NULL);
-  chThdCreateStatic(waThdADC2, sizeof(waThdADC2), NORMALPRIO + 1, ThdADC1, NULL);
-  chThdCreateStatic(waThdADC3, sizeof(waThdADC3), NORMALPRIO + 1, ThdADC1, NULL);
+  chThdCreateStatic(waThdADC2, sizeof(waThdADC2), NORMALPRIO, ThdADC2, NULL);
+ // chThdCreateStatic(waThdADC3, sizeof(waThdADC3), NORMALPRIO, ThdADC3, NULL);
+
   
   // Digital outputs
   palSetPadMode(VSEL_GPIO,

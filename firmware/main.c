@@ -26,6 +26,7 @@
 #include "usbcfg.h"
 #include "chprintf.h"
 
+#include "dcdc.h"
 #include "led.h"
 #include "repl.h"
 
@@ -53,12 +54,17 @@ int main(void) {
   usbConnectBus(serusbcfg.usbp);
   chThdSleepMilliseconds(500);
         
-  createReplThread((BaseSequentialStream *)&SDU1);
+ // createReplThread((BaseSequentialStream *)&SDU1);
 
   /*
    *  Main thread activity...
    */
   while (true) {
+
+    if (flag_ADC2) {
+        chprintf((BaseSequentialStream *)&SDU1, "ADC2 PA12: %d \r\n", lastvalue_ADC2 );
+        flag_ADC2 = FALSE;
+    }
 	  
     chThdSleepMilliseconds(1000);
   }
