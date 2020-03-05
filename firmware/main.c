@@ -61,9 +61,9 @@ int main(void) {
    */
   while (true) {
 
-    if (flag_ADC2) {
-        chprintf((BaseSequentialStream *)&SDU1, "ADC2 PA12: %d \r\n", lastvalue_ADC2 );
-        flag_ADC2 = FALSE;
+    if (flag_ADC3) {
+        chprintf((BaseSequentialStream *)&SDU1, "ADC3 PA12: %d \r\n", lastvalue_ADC3 );
+        flag_ADC3 = FALSE;
     }
 	  
     chThdSleepMilliseconds(1000);

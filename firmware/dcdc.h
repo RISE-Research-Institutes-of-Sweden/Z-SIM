@@ -41,7 +41,7 @@ extern bool flag_ADC2;
 extern bool flag_ADC3;
 extern float lastvalue_ADC1;
 extern int32_t lastvalue_ADC2;
-extern float lastvalue_ADC3;
+extern int32_t lastvalue_ADC3;
 
 extern void dcdc_init(void);
 extern bool dcdc_vsel_set(unsigned char vsel);

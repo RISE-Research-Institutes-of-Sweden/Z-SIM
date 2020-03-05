@@ -34,7 +34,7 @@ bool flag_ADC2 = FALSE;
 bool flag_ADC3 = FALSE;
 float lastvalue_ADC1;
 int32_t lastvalue_ADC2;
-float lastvalue_ADC3;
+int32_t lastvalue_ADC3;
 
 
 
@@ -88,8 +88,8 @@ static const ADCConversionGroup adcgrpcfg = {
 #define MY_NUM_CH_ADC1  1
 #define MY_NUM_CH_ADC2  2
 #define MY_NUM_CH_ADC3  2
-#define MY_SAMPLING_NUMBER_ADC1  3
-#define MY_SAMPLING_NUMBER_ADC2  10
+#define MY_SAMPLING_NUMBER_ADC1  1
+#define MY_SAMPLING_NUMBER_ADC2  1
 #define MY_SAMPLING_NUMBER_ADC3  1
 
 static adcsample_t sample_buff_ADC1[MY_NUM_CH_ADC1 * MY_SAMPLING_NUMBER_ADC1];
@@ -259,7 +259,8 @@ static THD_WORKING_AREA(waThdADC3, 512);
       mean += sample_buff_ADC3[ii];
     }
     mean /= MY_NUM_CH_ADC3 * MY_SAMPLING_NUMBER_ADC3;
-    lastvalue_ADC3 = (float)mean;
+//    lastvalue_ADC3 = (float)mean;
+    lastvalue_ADC3 = (int32_t)sample_buff_ADC3[0];
     flag_ADC3 = TRUE;
   }
 }
@@ -305,9 +306,8 @@ void dcdc_init(void) {
   palSetPadMode(GPIOC, 3, PAL_MODE_INPUT_ANALOG);
 
 //  chThdCreateStatic(waThdADC1, sizeof(waThdADC1), NORMALPRIO, ThdADC1, NULL);
-
-  chThdCreateStatic(waThdADC2, sizeof(waThdADC2), NORMALPRIO, ThdADC2, NULL);
- // chThdCreateStatic(waThdADC3, sizeof(waThdADC3), NORMALPRIO, ThdADC3, NULL);
+//  chThdCreateStatic(waThdADC2, sizeof(waThdADC2), NORMALPRIO, ThdADC2, NULL);
+  chThdCreateStatic(waThdADC3, sizeof(waThdADC3), NORMALPRIO, ThdADC3, NULL);
 
   
   // Digital outputs
