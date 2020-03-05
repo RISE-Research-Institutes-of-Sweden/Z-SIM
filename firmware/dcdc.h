@@ -40,6 +40,8 @@ extern void dcdc_init(void);
 extern bool dcdc_vsel_set(unsigned char vsel);
 extern bool dcdc_enable(void);
 extern void dcdc_disable(void); 
-
+extern float R_voltage(float current, float resistance);
+extern float C_voltage(float current, float Ii_t_ack, float capacitance);
+extern float L_voltage(float current, float prevCurrent, float inductance, float resistance, float dt);
 
 #endif

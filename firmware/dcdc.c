@@ -87,7 +87,7 @@ static const ADCConversionGroup adcgrpcfg = {
  */
 #define MY_NUM_CH_ADC1  1
 #define MY_NUM_CH_ADC2  2
-#define MY_NUM_CH_ADC3  1
+#define MY_NUM_CH_ADC3  2
 #define MY_SAMPLING_NUMBER_ADC1  1
 #define MY_SAMPLING_NUMBER_ADC2  1
 #define MY_SAMPLING_NUMBER_ADC3  1
@@ -294,7 +294,7 @@ void dcdc_init(void) {
                   0, PAL_MODE_INPUT_ANALOG);
   */
 
-  palSetPadMode(GPIOA, 1, PAL_MODE_INPUT_ANALOG);
+  palSetPadMode(GPIOA, 0, PAL_MODE_INPUT_ANALOG);
   palSetPadMode(GPIOA, 2, PAL_MODE_INPUT_ANALOG);
   palSetPadMode(GPIOA, 3, PAL_MODE_INPUT_ANALOG);
   
