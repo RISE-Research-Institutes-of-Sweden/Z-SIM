@@ -32,7 +32,7 @@ static unsigned int rail_vsense = 0;
 bool flag_ADC1 = FALSE;
 bool flag_ADC2 = FALSE;
 bool flag_ADC3 = FALSE;
-float lastvalue_ADC1;
+int32_t lastvalue_ADC1;
 int32_t lastvalue_ADC2;
 int32_t lastvalue_ADC3;
 
@@ -128,12 +128,12 @@ static const ADCConversionGroup ADC1_conversion_group = {
   0,                                /* CR1 */
   ADC_CR2_SWSTART,                  /* CR2 */
   0,                                /* SMPR1 */
-  ADC_SMPR2_SMP_AN0(ADC_SAMPLE_3),/* SMPR2 */
+  ADC_SMPR2_SMP_AN1(ADC_SAMPLE_3),/* SMPR2 */
   0,                                /* HTR */
   0,                                /* LTR */
   0,                                /* SQR1 */
   0,                                /* SQR2 */
-  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN0)  /* SQR3 */ /*I_SENSE*/
+  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN1)  /* SQR3 */ /*I_SENSE*/
 };
 
 static const ADCConversionGroup ADC2_conversion_group = {
@@ -179,7 +179,7 @@ static const ADCConversionGroup ADC3_conversion_group = {
 static THD_WORKING_AREA(waThdADC1, 512);
   static THD_FUNCTION(ThdADC1, arg) {
   unsigned ii;
-  int32_t mean;
+  float mean;
   (void) arg;
   chRegSetThreadName("ADC1 handler");
   /*
@@ -198,7 +198,8 @@ static THD_WORKING_AREA(waThdADC1, 512);
       mean += sample_buff_ADC1[ii];
     }
     mean /= MY_NUM_CH_ADC1 * MY_SAMPLING_NUMBER_ADC1;
-    lastvalue_ADC1 = (float)mean;
+//    lastvalue_ADC1 = (float)mean;
+    lastvalue_ADC1 = (int32_t)sample_buff_ADC1[0];
     flag_ADC1 = TRUE;
   }
 }
@@ -241,7 +242,7 @@ static THD_WORKING_AREA(waThdADC2, 512);
 static THD_WORKING_AREA(waThdADC3, 512);
   static THD_FUNCTION(ThdADC3, arg) {
   unsigned ii;
-  int32_t mean;
+  float mean;
   (void) arg;
   chRegSetThreadName("ADC3 handler");
   /*
@@ -298,16 +299,16 @@ void dcdc_init(void) {
                   0, PAL_MODE_INPUT_ANALOG);
   */
 
-  palSetPadMode(GPIOA, 0, PAL_MODE_INPUT_ANALOG);
+  palSetPadMode(GPIOA, 1, PAL_MODE_INPUT_ANALOG);
   palSetPadMode(GPIOA, 2, PAL_MODE_INPUT_ANALOG);
   palSetPadMode(GPIOA, 3, PAL_MODE_INPUT_ANALOG);
   
   palSetPadMode(GPIOC, 2, PAL_MODE_INPUT_ANALOG);
   palSetPadMode(GPIOC, 3, PAL_MODE_INPUT_ANALOG);
 
-//  chThdCreateStatic(waThdADC1, sizeof(waThdADC1), NORMALPRIO, ThdADC1, NULL);
+  chThdCreateStatic(waThdADC1, sizeof(waThdADC1), NORMALPRIO, ThdADC1, NULL);
 //  chThdCreateStatic(waThdADC2, sizeof(waThdADC2), NORMALPRIO, ThdADC2, NULL);
-  chThdCreateStatic(waThdADC3, sizeof(waThdADC3), NORMALPRIO, ThdADC3, NULL);
+//  chThdCreateStatic(waThdADC3, sizeof(waThdADC3), NORMALPRIO, ThdADC3, NULL);
 
   
   // Digital outputs

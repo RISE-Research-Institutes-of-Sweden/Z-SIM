@@ -39,7 +39,7 @@
 extern bool flag_ADC1;
 extern bool flag_ADC2;
 extern bool flag_ADC3;
-extern float lastvalue_ADC1;
+extern int32_t lastvalue_ADC1;
 extern int32_t lastvalue_ADC2;
 extern int32_t lastvalue_ADC3;
 

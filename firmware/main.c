@@ -61,11 +61,12 @@ int main(void) {
    */
   while (true) {
 
-    if (flag_ADC3) {
-        chprintf((BaseSequentialStream *)&SDU1, "ADC3 PA12: %d \r\n", lastvalue_ADC3 );
-        flag_ADC3 = FALSE;
+    if (flag_ADC1) {
+        chprintf((BaseSequentialStream *)&SDU1, "ADC1 PA1: %d DACsteps.\n\r", lastvalue_ADC1 );
+        flag_ADC1 = FALSE;
+        chThdSleepMilliseconds(150);
+        chprintf((BaseSequentialStream *)&SDU1, "\033[2J\033[1;1H");
     }
 	  
-    chThdSleepMilliseconds(1000);
   }
 }
