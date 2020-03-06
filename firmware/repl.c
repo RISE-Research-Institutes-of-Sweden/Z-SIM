@@ -21,8 +21,9 @@
 #include "hal.h"
 #include "chprintf.h"
 
+#include "adc.h"
 #include "led.h"
-#include "dcdc.h" 
+#include "dcdc.h"
 
 #include "heap.h"
 #include "symrepr.h"
@@ -48,9 +49,9 @@ VALUE ext_set_led(VALUE *args, int argn) {
 }
 
 VALUE ext_dcdc_enable(VALUE *args, int argn) {
-  // ignores all arguments 
+  // ignores all arguments
   (void) args;
-  (void) argn; 
+  (void) argn;
 
   bool res = dcdc_enable();
 
@@ -61,9 +62,9 @@ VALUE ext_dcdc_enable(VALUE *args, int argn) {
 VALUE ext_dcdc_disable(VALUE *args, int argn) {
   // ignores all arguments
   (void) args;
-  (void) argn; 
-  
-  dcdc_disable(); 
+  (void) argn;
+
+  dcdc_disable();
 
   return enc_sym(symrepr_true());
 }
@@ -72,7 +73,7 @@ VALUE ext_vsel_set(VALUE *args, int argn) {
   if (argn != 1) {
     return enc_sym(symrepr_nil());
   }
-  
+
   int vsel = dec_i(args[0]);
 
   if (vsel < 0) return enc_sym(symrepr_nil());
@@ -163,8 +164,8 @@ static THD_FUNCTION(repl, arg) {
 
 
   /* **************************************************
-   * EXAMPLE EXTENSION! 
-   * ************************************************** */ 
+   * EXAMPLE EXTENSION!
+   * ************************************************** */
   if (extensions_add("set-led",  ext_set_led)) {
     chprintf(chp,"set-led extension added.\n\r");
   } else {

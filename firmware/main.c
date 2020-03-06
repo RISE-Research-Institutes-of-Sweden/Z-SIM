@@ -26,6 +26,7 @@
 #include "usbcfg.h"
 #include "chprintf.h"
 
+#include "adc.h"
 #include "dcdc.h"
 #include "led.h"
 #include "repl.h"
@@ -36,24 +37,25 @@ int main(void) {
   halInit();
   chSysInit();
 
+  adc_init();
   dcdc_init();
   led_init();
 
-	
+
   sduObjectInit(&SDU1);
   sduStart(&SDU1, &serusbcfg);
 
   /*
    * Activates the USB driver and then the USB bus pull-up on D+.
    * Note, a delay is inserted in order to not have to disconnect the cable
-   * after a reset.
+   * after a reset.lastvalue_ADC1
    */
   usbDisconnectBus(serusbcfg.usbp);
   chThdSleepMilliseconds(1500);
   usbStart(serusbcfg.usbp, &usbcfg);
   usbConnectBus(serusbcfg.usbp);
   chThdSleepMilliseconds(500);
-        
+
  // createReplThread((BaseSequentialStream *)&SDU1);
 
   /*
@@ -67,6 +69,6 @@ int main(void) {
         chThdSleepMilliseconds(150);
         chprintf((BaseSequentialStream *)&SDU1, "\033[2J\033[1;1H");
     }
-	  
+
   }
 }

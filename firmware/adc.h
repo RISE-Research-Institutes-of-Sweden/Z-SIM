@@ -1,5 +1,6 @@
 /*
-    Copyright 2019 Joel Svensson	svenssonjoel@yahoo.se
+Copyright 2019/2020   Joel Svensson	svenssonjoel@yahoo.se
+                      Anders Thorsén thorsenanders@yahoo.com
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,30 +16,22 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _DCDC_H_
-#define _DCDC_H_
+#ifndef _ADC_H_
+#define _ADC_H_
 
 #include "hal.h"
 #include "hal_pal.h"
 
-#define INPUT_VSENSE_GPIO GPIOA
-#define INPUT_VSENSE_PIN  2
-#define RAIL_VSENSE_GPIO  GPIOA
-#define RAIL_VSENSE_PIN   3
+extern bool flag_ADC1;
+extern bool flag_ADC2;
+extern bool flag_ADC3;
+extern int32_t lastvalue_ADC1;
+extern int32_t lastvalue_ADC2;
+extern int32_t lastvalue_ADC3;
 
-#define VSEL_GPIO         GPIOB
-#define VSEL_1_PIN        2
-#define VSEL_2_PIN        3
-#define VSEL_3_PIN        4
-#define VSEL_4_PIN        5
-#define VSEL_5_PIN        6
-
-#define DCDC_OUTPUT_ENABLE_GPIO GPIOB
-#define DCDC_OUTPUT_ENABLE_PIN 7
-
-extern void dcdc_init(void);
-extern bool dcdc_vsel_set(unsigned char vsel);
-extern bool dcdc_enable(void);
-extern void dcdc_disable(void);
+extern void adc_init(void);
+extern float R_voltage(float current, float resistance);
+extern float C_voltage(float current, float Ii_t_ack, float capacitance);
+extern float L_voltage(float current, float prevCurrent, float inductance, float resistance, float dt);
 
 #endif
