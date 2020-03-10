@@ -22,6 +22,7 @@
 #include "chprintf.h"
 
 #include "adc.h"
+#include "dac.h"
 #include "led.h"
 #include "dcdc.h"
 

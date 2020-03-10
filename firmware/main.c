@@ -27,11 +27,15 @@
 #include "chprintf.h"
 
 #include "adc.h"
+#include "dac.h"
 #include "dcdc.h"
 #include "led.h"
 #include "repl.h"
 
+extern int32_t DAC1_calcvalue;
+extern int32_t DAC2_calcvalue;
 
+int32_t deltaDACvalue;
 
 int main(void) {
   halInit();
@@ -40,6 +44,7 @@ int main(void) {
   adc_init();
   dcdc_init();
   led_init();
+  dac_init();
 
 
   sduObjectInit(&SDU1);
@@ -66,9 +71,12 @@ int main(void) {
 
     if (flag_ADC1) {
         chprintf((BaseSequentialStream *)&SDU1, "ADC1 PA1: %d DACsteps.\n\r", lastvalue_ADC1 );
-        chprintf((BaseSequentialStream *)&SDU1, "Calculated deltaDAC: %d \n\r", (int32_t)deltaDAC(lastvalue_ADC1));
+        deltaDACvalue = deltaDAC(lastvalue_ADC1);
+        DAC1_calcvalue = (DACmax+10*deltaDACvalue)/2;
+        DAC2_calcvalue = (DACmax-10*deltaDACvalue)/2;
+        chprintf((BaseSequentialStream *)&SDU1, "Calculated DAC1 and DAC2: %d and %d \n\r", DAC1_calcvalue, DAC2_calcvalue);
         flag_ADC1 = FALSE;
-        chThdSleepMilliseconds(5000);
+        chThdSleepMilliseconds(1);
         chprintf((BaseSequentialStream *)&SDU1, "\033[2J\033[1;1H");
     }
   }

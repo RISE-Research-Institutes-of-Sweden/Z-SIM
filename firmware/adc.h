@@ -22,6 +22,15 @@ Copyright 2019/2020   Joel Svensson	svenssonjoel@yahoo.se
 #include "hal.h"
 #include "hal_pal.h"
 
+#define Rshunt 10.0e-3 //Ohm
+#define UADCmax 3.3 //Volt
+#define GainCurrentShunt 20 //V/V
+#define ADCmax 4095
+#define DACmax 4095
+#define UDACmax 3.3 //Volt
+#define Rload 1.1e-3 //Ohm
+#define GainOP 2
+
 extern bool flag_ADC1;
 extern bool flag_ADC2;
 extern bool flag_ADC3;
@@ -33,5 +42,6 @@ extern void adc_init(void);
 extern float R_voltage(float current, float resistance);
 extern float C_voltage(float current, float Ii_t_ack, float capacitance);
 extern float L_voltage(float current, float prevCurrent, float inductance, float resistance, float dt);
+extern int32_t deltaDAC(int32_t ADCvalue);
 
 #endif
