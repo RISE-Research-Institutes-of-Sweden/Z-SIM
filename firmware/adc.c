@@ -19,8 +19,14 @@
 
 #include "adc.h"
 
-#define Rshunt 10.0e-3
-
+#define Rshunt 10.0e-3 //Ohm
+#define UADCmax 3.3 //Volt
+#define GainCurrentShunt 20 //V/V
+#define ADCmax 4095
+#define DACmax 4095
+#define UDACmax 3.3 //Volt
+#define Rload 1.1e-3 //Ohm
+#define GainOP 2
 
 static adcsample_t samples[2];
 
@@ -261,4 +267,17 @@ float C_voltage(float current, float Ii_t_ack, float capacitance) {
 float L_voltage(float current, float prevCurrent, float inductance, float resistance, float dt) {
 
     return current*(resistance-Rshunt) + inductance*(current-prevCurrent/dt);
+}
+
+float uIn(float iIn) {
+
+   return Rload*iIn;
+}
+
+int32_t deltaDAC(int32_t ADCvalue) {
+  float uRshunt, iRshunt;
+  uRshunt = UADCmax/GainCurrentShunt*((float)ADCvalue/(float)ADCmax-0.5);
+  iRshunt = uRshunt/Rshunt;
+
+  return (int32_t) (float)DACmax/(GainOP*UDACmax)*(uIn(iRshunt)-uRshunt);
 }

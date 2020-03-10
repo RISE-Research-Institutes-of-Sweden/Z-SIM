@@ -63,12 +63,13 @@ int main(void) {
    */
   while (true) {
 
+
     if (flag_ADC1) {
         chprintf((BaseSequentialStream *)&SDU1, "ADC1 PA1: %d DACsteps.\n\r", lastvalue_ADC1 );
+        chprintf((BaseSequentialStream *)&SDU1, "Calculated deltaDAC: %d \n\r", (int32_t)deltaDAC(lastvalue_ADC1));
         flag_ADC1 = FALSE;
-        chThdSleepMilliseconds(150);
+        chThdSleepMilliseconds(5000);
         chprintf((BaseSequentialStream *)&SDU1, "\033[2J\033[1;1H");
     }
-
   }
 }
