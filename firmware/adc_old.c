@@ -29,21 +29,8 @@ int32_t lastvalue_ADC2;
 int32_t lastvalue_ADC3;
 
 /*===========================================================================*/
-/*GPT3 configuration. Used for trigging the ADC.                             */
-/*===========================================================================*/
-
-static const GPTConfig gpt3cfg1 = {
-  frequency:  1000000U,
-  callback:   NULL,
-  cr2:        TIM_CR2_MMS1,  // MMS = 010 = TRGO on Update Event
-  dier:       0U
-};
-
-
-/*===========================================================================*/
 /* ADC related code based on demo                                            */
 /* https://www.playembedded.org/blog/reading-a-slider/                       */
-/* http://www.playembedded.org/blog/wp-content/uploads/2018/05/RT-STM32F401RE-NUCLEO64-GPT-ADC-182.zip */
 /*===========================================================================*/
 /*
  * In this demo we want to use a single channel to sample voltage across
@@ -59,14 +46,6 @@ static const GPTConfig gpt3cfg1 = {
 static adcsample_t sample_buff_ADC1[MY_NUM_CH_ADC1 * MY_SAMPLING_NUMBER_ADC1];
 static adcsample_t sample_buff_ADC2[MY_NUM_CH_ADC2 * MY_SAMPLING_NUMBER_ADC2];
 static adcsample_t sample_buff_ADC3[MY_NUM_CH_ADC3 * MY_SAMPLING_NUMBER_ADC3];
-
-/*
-* ADC streaming callback
-*/
-size_t nx = 0, ny = 0;
-static void adccallback(ADCDriver *adcp, adcsample_t *buffer, size_t n) {
-  
-}
 
 /*
  * ADC conversion group3, one for each ADC
@@ -154,20 +133,10 @@ static THD_WORKING_AREA(waThdADC1, 512);
   float mean;
   (void) arg;
   chRegSetThreadName("ADC1 handler");
-
-  // Starting GPT3 driver used for triggig the ADC1
-  gptStart(&GPDT3, &gpt3cfg1);
-
   /*
     * Activates the ADC1 driver.
     */
   adcStart(&ADCD1, NULL);
-
-//  Strats an ADC contnous conversion trigged with a period of 1/10000 second
-  adcStartConversion(&ADCD1, &ADC1_conversion_group, sample_buff_ADC1, MY_SAMPLING_NUMBER_ADC1);
-  grpStartContinuous(&GPTD3, 100)
-
-
   while(TRUE) {
 //    chThdSleepMicroseconds(10);
     adcConvert(&ADCD1, &ADC1_conversion_group, sample_buff_ADC1, MY_SAMPLING_NUMBER_ADC1);

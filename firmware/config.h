@@ -16,24 +16,41 @@ Copyright 2019/2020   Joel Svensson	svenssonjoel@yahoo.se
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _ADC_H_
-#define _ADC_H_
+#ifndef _CONFIG_H_
+#define _CONFIG_H_
 
-#include "hal.h"
-#include "hal_pal.h"
-#include "config.h"
+// Harware Configuration
+#define Rshunt 10.0e-3 //Ohm
+#define UADCmax 3.3 //Volt
+#define GainCurrentShunt 20 //V/V
+#define ADCmax 4095
+#define DACmax 4095
+#define UDACmax 3.3 //Volt
+#define GainOP 2
 
-extern bool flag_ADC1;
-extern bool flag_ADC2;
-extern bool flag_ADC3;
-extern int32_t lastvalue_ADC1;
-extern int32_t lastvalue_ADC2;
-extern int32_t lastvalue_ADC3;
+// HW Pin Configuration
 
-extern void adc_init(void);
-extern float R_voltage(float current, float resistance);
-extern float C_voltage(float current, float Ii_t_ack, float capacitance);
-extern float L_voltage(float current, float prevCurrent, float inductance, float resistance, float dt);
-extern int32_t deltaDAC(int32_t ADCvalue);
+// DACs
+#define DAC_GPIO         GPIOA
+#define DAC1_PIN        4
+#define DAC2_PIN        5
+
+// ADCs
+
+#define ADC_SHUNT_GPIO  GPIOA
+#define I_SENSE_PIN     0
+#define I_SENSE_4T_PIN  1
+#define ADC_DCDC_GPIO   GPIOA
+#define RAIL_DIV_PIN    2
+#define PWR_DIV_PIN     3
+#define ADC_TEMP_GPIO   GPIOC
+#define RAIL_DIV_PIN    0
+#define PWR_DIV_PIN     1
+#define ADC_EXTRA_GPIO  GPIOC
+#define ADC_EXTRA1_PIN  2
+#define ADC_EXTRA2_PIN  3
+
+//Load
+#define Rload 1.1e-3 //Ohm
 
 #endif

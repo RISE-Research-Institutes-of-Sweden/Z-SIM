@@ -22,9 +22,10 @@ Copyright 2020   Anders Thorsén thorsenanders@yahoo.com
 
 #include "hal.h"
 #include "hal_pal.h"
+#include "config.h"
 
-extern int32_t DAC1_calcvalue;
-extern int32_t DAC2_calcvalue;
+extern int32_t dacOut1value;
+extern int32_t dacOut2value;
 
 extern void dac_init(void);
 

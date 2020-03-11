@@ -19,39 +19,16 @@
 #include "dac.h"
 #include <math.h>
 
-int32_t DAC1_calcvalue;
-int32_t DAC2_calcvalue;
-
-unsigned short sin_buffer[256];
-
-unsigned int freq = 1000;
-unsigned int base_freq = 96000;
-float base_freq_period = 1.0/96000.0;
-
-
-/*
-void toggler(GPTDriver *arg) {
-  (void) arg;
-
-  static unsigned int cnt = 0;
-
-  float t = ((float)cnt * base_freq_period);
-  unsigned char a = (unsigned char)(t * 256 * freq);
-
-  dacPutChannelX(&DACD1, 0, sin_buffer[a]);
-  palTogglePad(GPIOA, 4);
-
-  cnt++;
-}
-*/
+int32_t dacOut1value;
+int32_t dacOut2value;
 
 void toggler(GPTDriver *arg) {
   (void) arg;
 
-  dacPutChannelX(&DACD1, 0, DAC1_calcvalue);
-  dacPutChannelX(&DACD2, 0, DAC2_calcvalue);
-  palTogglePad(GPIOA, 4);
-  palTogglePad(GPIOA, 5);
+  dacPutChannelX(&DACD1, 0, dacOut1value);
+  dacPutChannelX(&DACD2, 0, dacOut2value);
+  palTogglePad(DAC_GPIO, DAC1_PIN);
+  palTogglePad(DAC_GPIO, DAC2_PIN);
 
 }
 
@@ -70,29 +47,14 @@ static const DACConfig dac_config = {
   .cr           = 0
 };
 
-/*
-static const DACConversionGroup dacgrpcfg1 = {
-  .num_channels = 2U,
-
-}
-
-*/
-
 void dac_init(void) {
-
-//  for (int i = 0; i < 256; i ++) {
-//    sin_buffer[i] = (unsigned short)(2047.5 + (2047.5 * sin(2*3.1459*((float)i/256.0))));
-//    sin_buffer[i] = (unsigned short)(2047.5 + (2047.5 * );
-//  }
 
   /*
    * Starting DAC1 driver, setting up the output pin as analog as suggested
    * by the Reference Manual.
    */
-  palSetPadMode(GPIOA, 4, PAL_MODE_INPUT_ANALOG);
-  palSetPadMode(GPIOA, 5, PAL_MODE_INPUT_ANALOG);
-//  palSetPadMode(GPIOA, 4, PAL_MODE_OUTPUT_PUSHPULL );
-//  palSetPadMode(GPIOA, 5, PAL_MODE_OUTPUT_PUSHPULL );
+  palSetPadMode(DAC_GPIO, DAC1_PIN, PAL_MODE_INPUT_ANALOG);
+  palSetPadMode(DAC_GPIO, DAC2_PIN, PAL_MODE_INPUT_ANALOG);
 
   dacStart(&DACD1, &dac_config);
   dacStart(&DACD2, &dac_config);
