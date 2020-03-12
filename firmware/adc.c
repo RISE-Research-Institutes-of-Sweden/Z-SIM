@@ -63,10 +63,32 @@ static adcsample_t sample_buff_ADC3[MY_NUM_CH_ADC3 * MY_SAMPLING_NUMBER_ADC3];
 /*
 * ADC streaming callback
 */
+/*
+ * ADC streaming callback.
+ */
+
 size_t nx = 0, ny = 0;
 static void adccallback(ADCDriver *adcp, adcsample_t *buffer, size_t n) {
-  
+
+  (void)adcp;
+  /* Updating counters.*/
+  if (samples1 == buffer) {
+    nx += n;
+  }
+  else {
+    ny += n;
+  }
 }
+
+/*
+ * ADC errors callbaack, should never happen.
+ */
+static void adcerrorcallback(ADCDriver *adcp, adcerror_t err) {
+
+  (void)adcp;
+  (void)err;
+}
+
 
 /*
  * ADC conversion group3, one for each ADC
@@ -93,12 +115,12 @@ static void adccallback(ADCDriver *adcp, adcsample_t *buffer, size_t n) {
  * ADC1   VBAT = VBAT
  */
 static const ADCConversionGroup ADC1_conversion_group = {
-  FALSE,                            /*NOT CIRCULAR*/
-  MY_NUM_CH_ADC1,                        /*NUMB OF CH*/
-  NULL,                             /*NO ADC CALLBACK*/
-  NULL,                             /*NO ADC ERROR CALLBACK*/
+  TRUE,                            /*NOT CIRCULAR*/
+  MY_NUM_CH_ADC1,                  /*NUMB OF CH*/
+  adccallback,                     /* ADC CALLBACK*/
+  adcerrorcallback,                 /*ADC ERROR CALLBACK*/
   0,                                /* CR1 */
-  ADC_CR2_SWSTART,                  /* CR2 */
+  ADC_CR2_EXTEN_0 | ADC_CR2_EXTSEL_3,  /* CR2 */
   0,                                /* SMPR1 */
   ADC_SMPR2_SMP_AN1(ADC_SAMPLE_3),/* SMPR2 */
   0,                                /* HTR */
