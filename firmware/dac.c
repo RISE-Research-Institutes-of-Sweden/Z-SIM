@@ -24,6 +24,11 @@ int32_t dacOut2value;
 
 void toggler(GPTDriver *arg) {
   (void) arg;
+  int32_t dacOut1value, dacOut2value, deltaDACvalue;
+
+  deltaDACvalue = deltaDAC(mean_I_SENSE_4T);
+  dacOut1value = (DACmax+10*deltaDACvalue)/2;
+  dacOut2value = (DACmax-10*deltaDACvalue)/2;
 
   dacPutChannelX(&DACD1, 0, dacOut1value);
   dacPutChannelX(&DACD2, 0, dacOut2value);

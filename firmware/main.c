@@ -36,7 +36,6 @@
 extern int32_t dacOut1value;
 extern int32_t dacOut2value;
 
-int32_t deltaDACvalue;
 
 int main(void) {
   halInit();
@@ -54,7 +53,8 @@ int main(void) {
   /*
    * Activates the USB driver and then the USB bus pull-up on D+.
    * Note, a delay is inserted in order to not have to disconnect the cable
-   * after a reset.lastvalue_ADC1
+   * after a reset.int32_t mean_I_SENSE;
+int32_t mean_I_SENSE_4T;
    */
   usbDisconnectBus(serusbcfg.usbp);
   chThdSleepMilliseconds(1500);
@@ -68,17 +68,9 @@ int main(void) {
    *  Main thread activity...
    */
   while (true) {
-
-
-    if (flag_ADC1) {
-        chprintf((BaseSequentialStream *)&SDU1, "ADC1 PA1: %d DACsteps.\n\r", lastvalue_ADC1 );
-        deltaDACvalue = deltaDAC(lastvalue_ADC1);
-        dacOut1value = (DACmax+10*deltaDACvalue)/2;
-        dacOut2value = (DACmax-10*deltaDACvalue)/2;
-        chprintf((BaseSequentialStream *)&SDU1, "Calculated DAC1 and DAC2: %d and %d \n\r", dacOut1value, dacOut2value);
-        flag_ADC1 = FALSE;
-        chThdSleepMilliseconds(1);
+        chprintf((BaseSequentialStream *)&SDU1, "ADC1 PA1: %d DACsteps.\n\r", mean_I_SENSE_4T );
+        chThdSleepMilliseconds(100);
         chprintf((BaseSequentialStream *)&SDU1, "\033[2J\033[1;1H");
-    }
+
   }
 }

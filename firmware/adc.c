@@ -24,7 +24,8 @@ static adcsample_t samples[2];
 bool flag_ADC1 = FALSE;
 bool flag_ADC2 = FALSE;
 bool flag_ADC3 = FALSE;
-int32_t lastvalue_ADC1;
+int32_t mean_I_SENSE;
+int32_t mean_I_SENSE_4T;
 int32_t lastvalue_ADC2;
 int32_t lastvalue_ADC3;
 
@@ -35,7 +36,7 @@ int32_t lastvalue_ADC3;
 static const GPTConfig gpt3cfg1 = {
   frequency:  1000000U,
   callback:   NULL,
-  cr2:        TIM_CR2_MMS1,  // MMS = 010 = TRGO on Update Event
+  cr2:        TIM_CR2_MMS_1,  // MMS = 010 = TRGO on Update Event
   dier:       0U
 };
 
@@ -49,10 +50,10 @@ static const GPTConfig gpt3cfg1 = {
  * In this demo we want to use a single channel to sample voltage across
  * the potentiometer.
  */
-#define MY_NUM_CH_ADC1  1
+#define MY_NUM_CH_ADC1  2
 #define MY_NUM_CH_ADC2  2
 #define MY_NUM_CH_ADC3  2
-#define MY_SAMPLING_NUMBER_ADC1  1
+#define MY_SAMPLING_NUMBER_ADC1  10
 #define MY_SAMPLING_NUMBER_ADC2  1
 #define MY_SAMPLING_NUMBER_ADC3  1
 
@@ -67,17 +68,35 @@ static adcsample_t sample_buff_ADC3[MY_NUM_CH_ADC3 * MY_SAMPLING_NUMBER_ADC3];
  * ADC streaming callback.
  */
 
+ /*
+  * From https://github.com/resset/STM32F4-Discovery-example-code/blob/master/myADC.c
+  * This callback is called everytime the buffer is filled or half-filled
+  * A second ring buffer is used to store the averaged data.
+  * I should use a third buffer to store a timestamp when the buffer was filled.
+  * I hope I understood how the Conversion ring buffer works...
+  */
+
+
 size_t nx = 0, ny = 0;
 static void adccallback(ADCDriver *adcp, adcsample_t *buffer, size_t n) {
 
   (void)adcp;
-  /* Updating counters.*/
-  if (samples1 == buffer) {
-    nx += n;
+  (void) n;
+
+  unsigned int i,j;
+  uint32_t sum_I_SEMSE=0;
+  uint32_t sum_I_SEMSE_4T=0;
+
+//  if(n != MY_SAMPLING_NUMBER_ADC1/2) overflow++;
+
+  for (i=0; i< MY_SAMPLING_NUMBER_ADC1/2;i++){
+    sum_I_SEMSE += buffer[i*MY_NUM_CH_ADC1+0];
+    sum_I_SEMSE_4T += buffer[i*MY_NUM_CH_ADC1+1];
   }
-  else {
-    ny += n;
-  }
+
+  mean_I_SENSE = sum_I_SEMSE / (MY_SAMPLING_NUMBER_ADC1/2);
+  mean_I_SENSE_4T = sum_I_SEMSE / (MY_SAMPLING_NUMBER_ADC1/2);
+
 }
 
 /*
@@ -122,12 +141,14 @@ static const ADCConversionGroup ADC1_conversion_group = {
   0,                                /* CR1 */
   ADC_CR2_EXTEN_0 | ADC_CR2_EXTSEL_3,  /* CR2 */
   0,                                /* SMPR1 */
+  ADC_SMPR2_SMP_AN0(ADC_SAMPLE_3)|
   ADC_SMPR2_SMP_AN1(ADC_SAMPLE_3),/* SMPR2 */
   0,                                /* HTR */
   0,                                /* LTR */
   0,                                /* SQR1 */
   0,                                /* SQR2 */
-  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN1)  /* SQR3 */ /*I_SENSE*/
+  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN0)|  /* SQR3 */ /*I_SENSE*/
+  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN1)   /* SQR3 */ /*I_SENSE_4T*/
 };
 
 static const ADCConversionGroup ADC2_conversion_group = {
@@ -172,13 +193,11 @@ static const ADCConversionGroup ADC3_conversion_group = {
 
 static THD_WORKING_AREA(waThdADC1, 512);
   static THD_FUNCTION(ThdADC1, arg) {
-  unsigned ii;
-  float mean;
   (void) arg;
   chRegSetThreadName("ADC1 handler");
 
   // Starting GPT3 driver used for triggig the ADC1
-  gptStart(&GPDT3, &gpt3cfg1);
+  gptStart(&GPTD3, &gpt3cfg1);
 
   /*
     * Activates the ADC1 driver.
@@ -187,25 +206,8 @@ static THD_WORKING_AREA(waThdADC1, 512);
 
 //  Strats an ADC contnous conversion trigged with a period of 1/10000 second
   adcStartConversion(&ADCD1, &ADC1_conversion_group, sample_buff_ADC1, MY_SAMPLING_NUMBER_ADC1);
-  grpStartContinuous(&GPTD3, 100)
+  gptStartContinuous(&GPTD3, 100);
 
-
-  while(TRUE) {
-//    chThdSleepMicroseconds(10);
-    adcConvert(&ADCD1, &ADC1_conversion_group, sample_buff_ADC1, MY_SAMPLING_NUMBER_ADC1);
-
-    /* Making mean of sampled values. Note that samples refers to OTA and OTB
-        but since they we are looking for Rcm (common mode) we can make a simple
-        mean */
-    mean = 0;
-    for (ii = 0; ii < MY_NUM_CH_ADC1 * MY_SAMPLING_NUMBER_ADC1; ii++) {
-      mean += sample_buff_ADC1[ii];
-    }
-    mean /= MY_NUM_CH_ADC1 * MY_SAMPLING_NUMBER_ADC1;
-//    lastvalue_ADC1 = (float)mean;
-    lastvalue_ADC1 = (int32_t)sample_buff_ADC1[0];
-    flag_ADC1 = TRUE;
-  }
 }
 
 /*===========================================================================*/

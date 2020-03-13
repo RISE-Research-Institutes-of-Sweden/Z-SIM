@@ -19,6 +19,7 @@ Copyright 2019/2020   Joel Svensson	svenssonjoel@yahoo.se
 #ifndef _ADC_H_
 #define _ADC_H_
 
+#include "ch.h"
 #include "hal.h"
 #include "hal_pal.h"
 #include "config.h"
@@ -26,7 +27,8 @@ Copyright 2019/2020   Joel Svensson	svenssonjoel@yahoo.se
 extern bool flag_ADC1;
 extern bool flag_ADC2;
 extern bool flag_ADC3;
-extern int32_t lastvalue_ADC1;
+extern int32_t mean_I_SENSE;
+extern int32_t mean_I_SENSE_4T;;
 extern int32_t lastvalue_ADC2;
 extern int32_t lastvalue_ADC3;
 

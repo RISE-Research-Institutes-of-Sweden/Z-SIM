@@ -44,8 +44,8 @@ Copyright 2019/2020   Joel Svensson	svenssonjoel@yahoo.se
 #define RAIL_DIV_PIN    2
 #define PWR_DIV_PIN     3
 #define ADC_TEMP_GPIO   GPIOC
-#define RAIL_DIV_PIN    0
-#define PWR_DIV_PIN     1
+#define TEMP1_PIN    0
+#define TEMP2_PIN     1
 #define ADC_EXTRA_GPIO  GPIOC
 #define ADC_EXTRA1_PIN  2
 #define ADC_EXTRA2_PIN  3
