@@ -19,7 +19,7 @@
 
 #include "adc.h"
 
-static adcsample_t samples[2];
+//static adcsample_t samples[2];
 
 bool flag_ADC1 = FALSE;
 bool flag_ADC2 = FALSE;
@@ -34,7 +34,7 @@ int32_t lastvalue_ADC3;
 /*===========================================================================*/
 
 static const GPTConfig gpt3cfg1 = {
-  frequency:  1000000U,
+  frequency:  1000000U,       // 1 MHz I think
   callback:   NULL,
   cr2:        TIM_CR2_MMS_1,  // MMS = 010 = TRGO on Update Event
   dier:       0U
@@ -53,13 +53,17 @@ static const GPTConfig gpt3cfg1 = {
 #define MY_NUM_CH_ADC1  2
 #define MY_NUM_CH_ADC2  2
 #define MY_NUM_CH_ADC3  2
-#define MY_SAMPLING_NUMBER_ADC1  10
+#define MY_SAMPLING_NUMBER_ADC1  2  //Min 2 in contnous mode?
 #define MY_SAMPLING_NUMBER_ADC2  1
 #define MY_SAMPLING_NUMBER_ADC3  1
 
-static adcsample_t sample_buff_ADC1[MY_NUM_CH_ADC1 * MY_SAMPLING_NUMBER_ADC1];
-static adcsample_t sample_buff_ADC2[MY_NUM_CH_ADC2 * MY_SAMPLING_NUMBER_ADC2];
-static adcsample_t sample_buff_ADC3[MY_NUM_CH_ADC3 * MY_SAMPLING_NUMBER_ADC3];
+static int32_t buffer_size_ADC1 = MY_NUM_CH_ADC1 * MY_SAMPLING_NUMBER_ADC1
+static int32_t buffer_size_ADC2 = MY_NUM_CH_ADC2 * MY_SAMPLING_NUMBER_ADC2
+static int32_t buffer_size_ADC3 = MY_NUM_CH_ADC3 * MY_SAMPLING_NUMBER_ADC3
+
+static adcsample_t sample_buff_ADC1[buffer_size_ADC1];
+static adcsample_t sample_buff_ADC2[buffer_size_ADC2];
+static adcsample_t sample_buff_ADC3[buffer_size_ADC3];
 
 /*
 * ADC streaming callback
@@ -74,14 +78,17 @@ static adcsample_t sample_buff_ADC3[MY_NUM_CH_ADC3 * MY_SAMPLING_NUMBER_ADC3];
   * A second ring buffer is used to store the averaged data.
   * I should use a third buffer to store a timestamp when the buffer was filled.
   * I hope I understood how the Conversion ring buffer works...
+  * 
+  * 
+  * Also base don th GPT-ADC example in ChibiOS
   */
 
 
 size_t nx = 0, ny = 0;
-static void adccallback(ADCDriver *adcp, adcsample_t *buffer, size_t n) {
+static void adccallback(ADCDriver *adcp) {
 
-  (void)adcp;
-  (void) n;
+//  (void)adcp;
+//  (void) n;
 
   unsigned int i,j;
   uint32_t sum_I_SEMSE=0;
@@ -89,9 +96,22 @@ static void adccallback(ADCDriver *adcp, adcsample_t *buffer, size_t n) {
 
 //  if(n != MY_SAMPLING_NUMBER_ADC1/2) overflow++;
 
+  if (adcIsBufferComplete(adcp)) {
+    nx += 1;
+    j=buffer_size_ADC1/2;  // Upper part of buffer
+  }
+  else {
+    ny += 1;
+    j=0;  //Lower part of buffer
+  }
+
+  lastvalue1=sample_buff_ADC1[(j+1)*buffer_size_ADC1/2-2];
+  lastvalue2=sample_buff_ADC1[(j+1)*buffer_size_ADC1/2-1];
+
+
   for (i=0; i< MY_SAMPLING_NUMBER_ADC1/2;i++){
-    sum_I_SEMSE += buffer[i*MY_NUM_CH_ADC1+0];
-    sum_I_SEMSE_4T += buffer[i*MY_NUM_CH_ADC1+1];
+    sum_I_SEMSE += sample_buff_ADC1[j+i*MY_NUM_CH_ADC1+0];
+    sum_I_SEMSE_4T += sample_buff_ADC1[j+i*MY_NUM_CH_ADC1+1];
   }
 
   mean_I_SENSE = sum_I_SEMSE / (MY_SAMPLING_NUMBER_ADC1/2);
@@ -151,6 +171,7 @@ static const ADCConversionGroup ADC1_conversion_group = {
   ADC_SQR3_SQ1_N(ADC_CHANNEL_IN1)   /* SQR3 */ /*I_SENSE_4T*/
 };
 
+#ifdef zSIM
 static const ADCConversionGroup ADC2_conversion_group = {
   FALSE,                            /*NOT CIRCULAR*/
   MY_NUM_CH_ADC2,                        /*NUMB OF CH*/
@@ -168,6 +189,28 @@ static const ADCConversionGroup ADC2_conversion_group = {
   ADC_SQR3_SQ1_N(ADC_CHANNEL_IN2) |             /*RAIL_DIV*/
   ADC_SQR3_SQ2_N(ADC_CHANNEL_IN3)  /* SQR3 */   /*PWR_DIV*/
 };
+#endif //zSIM
+
+#ifdef STM32F4DISC
+static const ADCConversionGroup ADC2_conversion_group = {
+  FALSE,                            /*NOT CIRCULAR*/
+  MY_NUM_CH_ADC2,                        /*NUMB OF CH*/
+  NULL,                             /*NO ADC CALLBACK*/
+  NULL,                             /*NO ADC ERROR CALLBACK*/
+  0,                                /* CR1 */
+  ADC_CR2_SWSTART,                  /* CR2 */
+  ADC_SMPR1_SMP_AN14(ADC_SAMPLE_3) |
+  ADC_SMPR1_SMP_AN15(ADC_SAMPLE_3),  /* SMPR1 */
+  0,                                /* SMPR2 */
+  0,                                /* HTR */
+  0,                                /* LTR */
+  0,                                /* SQR1 */
+  0,                                /* SQR2 */
+  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN14) |             /*RAIL_DIV*/
+  ADC_SQR3_SQ2_N(ADC_CHANNEL_IN15)  /* SQR3 */   /*PWR_DIV*/
+};
+#endif //zSIM
+
 
 static const ADCConversionGroup ADC3_conversion_group = {
   FALSE,                            /*NOT CIRCULAR*/

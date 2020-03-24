@@ -7,11 +7,11 @@
 void led_write(int num, int state) {
   switch (num) {
   case LED_RED:
-    palWritePad(GPIOB, 0, state);
+    palWritePad(LED_GPIO, LED_RED_PIN, state);
     break;
 
   case LED_GREEN:
-    palWritePad(GPIOB, 1, state);
+    palWritePad(LED_GPIO, LED_GREEN_PIN, state);
     break;
 
   default:
@@ -20,10 +20,10 @@ void led_write(int num, int state) {
 }
 
 void led_init(void) {
-  palSetPadMode(GPIOB, 0,
+  palSetPadMode(LED_GPIO, LED_RED_PIN,
 		PAL_MODE_OUTPUT_PUSHPULL |
 		PAL_STM32_OSPEED_HIGHEST);
-  palSetPadMode(GPIOB, 1,
+  palSetPadMode(LED_GPIO, LED_GREEN_PIN,
 		PAL_MODE_OUTPUT_PUSHPULL |
 		PAL_STM32_OSPEED_HIGHEST);
 

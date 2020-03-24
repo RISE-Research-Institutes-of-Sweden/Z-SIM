@@ -18,6 +18,8 @@
 #ifndef _LED_H_
 #define _LED_H_
 
+#include "config.h"
+
 #define LED_RED   0
 #define LED_GREEN 1
 
