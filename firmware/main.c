@@ -36,7 +36,7 @@
 extern int32_t dacOut1value;
 extern int32_t dacOut2value;
 extern int32_t mean_I_SENSE;
-extern int32_t mean_I_SENSE_4T
+extern int32_t mean_I_SENSE_4T;
 
 #ifdef STM32F4DISC
 BaseSequentialStream * chp = (BaseSequentialStream *) &SD2;
@@ -104,5 +104,6 @@ int main(void) {
         chprintf(chp, "\033[2J\033[1;1H");
 
   }
+   #endif //STM32F4
 
   }

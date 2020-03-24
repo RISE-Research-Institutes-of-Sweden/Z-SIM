@@ -57,13 +57,13 @@ static const GPTConfig gpt3cfg1 = {
 #define MY_SAMPLING_NUMBER_ADC2  1
 #define MY_SAMPLING_NUMBER_ADC3  1
 
-static int32_t buffer_size_ADC1 = MY_NUM_CH_ADC1 * MY_SAMPLING_NUMBER_ADC1
-static int32_t buffer_size_ADC2 = MY_NUM_CH_ADC2 * MY_SAMPLING_NUMBER_ADC2
-static int32_t buffer_size_ADC3 = MY_NUM_CH_ADC3 * MY_SAMPLING_NUMBER_ADC3
+int32_t buffer_size_ADC1 = MY_NUM_CH_ADC1 * MY_SAMPLING_NUMBER_ADC1;
+int32_t buffer_size_ADC2 = MY_NUM_CH_ADC2 * MY_SAMPLING_NUMBER_ADC2;
+int32_t buffer_size_ADC3 = MY_NUM_CH_ADC3 * MY_SAMPLING_NUMBER_ADC3;
 
-static adcsample_t sample_buff_ADC1[buffer_size_ADC1];
-static adcsample_t sample_buff_ADC2[buffer_size_ADC2];
-static adcsample_t sample_buff_ADC3[buffer_size_ADC3];
+static adcsample_t sample_buff_ADC1[MY_NUM_CH_ADC1 * MY_SAMPLING_NUMBER_ADC1];
+static adcsample_t sample_buff_ADC2[MY_NUM_CH_ADC2 * MY_SAMPLING_NUMBER_ADC2];
+static adcsample_t sample_buff_ADC3[MY_NUM_CH_ADC3 * MY_SAMPLING_NUMBER_ADC3];
 
 /*
 * ADC streaming callback
@@ -78,8 +78,8 @@ static adcsample_t sample_buff_ADC3[buffer_size_ADC3];
   * A second ring buffer is used to store the averaged data.
   * I should use a third buffer to store a timestamp when the buffer was filled.
   * I hope I understood how the Conversion ring buffer works...
-  * 
-  * 
+  *
+  *
   * Also base don th GPT-ADC example in ChibiOS
   */
 
@@ -105,8 +105,8 @@ static void adccallback(ADCDriver *adcp) {
     j=0;  //Lower part of buffer
   }
 
-  lastvalue1=sample_buff_ADC1[(j+1)*buffer_size_ADC1/2-2];
-  lastvalue2=sample_buff_ADC1[(j+1)*buffer_size_ADC1/2-1];
+//  lastvalue1=sample_buff_ADC1[(j+1)*(MY_NUM_CH_ADC1 * MY_SAMPLING_NUMBER_ADC1)/2-2];
+//  lastvalue2=sample_buff_ADC1[(j+1)*(MY_NUM_CH_ADC1 * MY_SAMPLING_NUMBER_ADC1)/2-1];
 
 
   for (i=0; i< MY_SAMPLING_NUMBER_ADC1/2;i++){
