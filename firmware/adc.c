@@ -98,8 +98,8 @@ static void adccallback(ADCDriver *adcp) {
 
 
   unsigned int i,j;
-  uint32_t sum_I_SEMSE=0;
-  uint32_t sum_I_SEMSE_4T=0;
+  uint32_t sum_I_SENSE=0;
+  uint32_t sum_I_SENSE_4T=0;
 
 
   if (adcIsBufferComplete(adcp)) {
@@ -112,12 +112,12 @@ static void adccallback(ADCDriver *adcp) {
   }
 
   for (i=0; i< MY_SAMPLING_NUMBER_ADC1/2;i++){
-    sum_I_SEMSE += sample_buff_ADC1[j+i*MY_NUM_CH_ADC1+0];
-    sum_I_SEMSE_4T += sample_buff_ADC1[j+i*MY_NUM_CH_ADC1+1];
+    sum_I_SENSE += sample_buff_ADC1[j+i*MY_NUM_CH_ADC1+1];
+    sum_I_SENSE_4T += sample_buff_ADC1[j+i*MY_NUM_CH_ADC1+0];
   }
 
-  mean_I_SENSE = sum_I_SEMSE / (MY_SAMPLING_NUMBER_ADC1/2);
-  mean_I_SENSE_4T = sum_I_SEMSE / (MY_SAMPLING_NUMBER_ADC1/2);
+  mean_I_SENSE = sum_I_SENSE / (MY_SAMPLING_NUMBER_ADC1/2);
+  mean_I_SENSE_4T = sum_I_SENSE_4T / (MY_SAMPLING_NUMBER_ADC1/2);
 
   prevMean_I_SENSE_AC = mean_I_SENSE_AC;
   prevMean_I_SENSE_4T_AC = mean_I_SENSE_4T_AC;
