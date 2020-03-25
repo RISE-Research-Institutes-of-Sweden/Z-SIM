@@ -171,7 +171,6 @@ static const ADCConversionGroup ADC1_conversion_group = {
   ADC_SQR3_SQ1_N(ADC_CHANNEL_IN1)   /* SQR3 */ /*I_SENSE_4T*/
 };
 
-#ifdef zSIM
 static const ADCConversionGroup ADC2_conversion_group = {
   FALSE,                            /*NOT CIRCULAR*/
   MY_NUM_CH_ADC2,                        /*NUMB OF CH*/
@@ -189,28 +188,6 @@ static const ADCConversionGroup ADC2_conversion_group = {
   ADC_SQR3_SQ1_N(ADC_CHANNEL_IN2) |             /*RAIL_DIV*/
   ADC_SQR3_SQ2_N(ADC_CHANNEL_IN3)  /* SQR3 */   /*PWR_DIV*/
 };
-#endif //zSIM
-
-#ifdef STM32F4DISC
-static const ADCConversionGroup ADC2_conversion_group = {
-  FALSE,                            /*NOT CIRCULAR*/
-  MY_NUM_CH_ADC2,                        /*NUMB OF CH*/
-  NULL,                             /*NO ADC CALLBACK*/
-  NULL,                             /*NO ADC ERROR CALLBACK*/
-  0,                                /* CR1 */
-  ADC_CR2_SWSTART,                  /* CR2 */
-  ADC_SMPR1_SMP_AN14(ADC_SAMPLE_3) |
-  ADC_SMPR1_SMP_AN15(ADC_SAMPLE_3),  /* SMPR1 */
-  0,                                /* SMPR2 */
-  0,                                /* HTR */
-  0,                                /* LTR */
-  0,                                /* SQR1 */
-  0,                                /* SQR2 */
-  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN14) |             /*RAIL_DIV*/
-  ADC_SQR3_SQ2_N(ADC_CHANNEL_IN15)  /* SQR3 */   /*PWR_DIV*/
-};
-#endif //zSIM
-
 
 static const ADCConversionGroup ADC3_conversion_group = {
   FALSE,                            /*NOT CIRCULAR*/

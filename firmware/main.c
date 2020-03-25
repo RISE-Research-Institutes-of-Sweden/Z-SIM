@@ -38,20 +38,17 @@ extern int32_t dacOut2value;
 extern int32_t mean_I_SENSE;
 extern int32_t mean_I_SENSE_4T;
 
-#ifdef STM32F4DISC
-BaseSequentialStream * chp = (BaseSequentialStream *) &SD2;
-#endif //STM32F4DISC
 
 int main(void) {
   halInit();
   chSysInit();
 
   adc_init();
-  dcdc_init();
+  //dcdc_init();
   led_init();
   dac_init();
 
-  #ifdef zSIM
+  
   sduObjectInit(&SDU1);
   sduStart(&SDU1, &serusbcfg);
 
@@ -75,35 +72,5 @@ int main(void) {
         chThdSleepMilliseconds(100);
         chprintf((BaseSequentialStream *)&SDU1, "\033[2J\033[1;1H");
 
-  }
-
-#endif //zSIM
-
-#ifdef STM32F4DISC
-  /*
-   * Activates the serial driver 2 using the driver default configuration.
-   * PA2(TX) and PA3(RX) are routed to USART2.
-   */
-
-  palSetPadMode(UART_GPIO, TX_PIN, PAL_MODE_ALTERNATE(7));
-  palSetPadMode(UART_GPIO, RX_PIN, PAL_MODE_ALTERNATE(7));
-
-
-  /*
-   * Activates the serial driver 2 using the driver default configuration.
-   */
-  sdStart(&SD2, NULL);
-
-
-  /*
-   *  Main thread activity...
-   */
-  while (true) {
-        chprintf(chp, "ADC1 PA1: %d DACsteps.\n\r", mean_I_SENSE_4T );
-        chThdSleepMilliseconds(100);
-        chprintf(chp, "\033[2J\033[1;1H");
-
-  }
-   #endif //STM32F4
-
+      }
   }

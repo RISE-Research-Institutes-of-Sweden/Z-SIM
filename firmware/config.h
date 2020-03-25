@@ -44,6 +44,9 @@ Copyright 2019/2020   Joel Svensson	svenssonjoel@yahoo.se
 #define ADC_SHUNT_GPIO  GPIOA
 #define I_SENSE_PIN     0
 #define I_SENSE_4T_PIN  1
+#define ADC_DCDC_GPIO   GPIOA
+#define RAIL_DIV_PIN    2
+#define PWR_DIV_PIN     3
 #define ADC_TEMP_GPIO   GPIOC
 #define TEMP1_PIN    0
 #define TEMP2_PIN     1
@@ -58,10 +61,6 @@ Copyright 2019/2020   Joel Svensson	svenssonjoel@yahoo.se
 #ifdef zSIM
 // HW Pin Configuration z-SIM
 
-#define ADC_DCDC_GPIO   GPIOA
-#define RAIL_DIV_PIN    2
-#define PWR_DIV_PIN     3
-
 #define LED_GPIO   GPIOB
 #define LED_RED_PIN     0
 #define LED_GREEN_PIN   1
@@ -71,18 +70,9 @@ Copyright 2019/2020   Joel Svensson	svenssonjoel@yahoo.se
 #ifdef STM32F4DISC
 // HW Pin Configuration STM32F4DICOVERY
 
-//UART
-#define UART_GPIO   GPIOA
-#define TX_PIN    2
-#define RX_PIN     3
-
-#define ADC_DCDC_GPIO   GPIOC
-#define RAIL_DIV_PIN    4
-#define PWR_DIV_PIN     5
-
 #define LED_GPIO   GPIOD
 #define LED_RED_PIN     GPIOD_LED5
-#define LED_GREEN_PIN   GPIOD_LED3
+#define LED_GREEN_PIN   GPIOD_LED4
 
 #endif //STM32F4DISC
 
