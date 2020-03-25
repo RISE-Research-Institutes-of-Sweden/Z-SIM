@@ -19,9 +19,22 @@
 #include "dac.h"
 #include <math.h>
 
-int32_t dacOut1value;
-int32_t dacOut2value;
 
+void dacOutput(int32_t outputPeak2Peak) {
+  
+  int32_t dacOut1value, dacOut2value;
+
+  dacOut1value = (DACmax+outputPeak2Peak)/2;
+  dacOut2value = (DACmax-outputPeak2Peak)/2;
+
+  dacPutChannelX(&DACD1, 0, dacOut1value);
+  dacPutChannelX(&DACD2, 0, dacOut2value);
+  palTogglePad(DAC_GPIO, DAC1_PIN);
+  palTogglePad(DAC_GPIO, DAC2_PIN);
+
+}
+
+/*
 void toggler(GPTDriver *arg) {
   (void) arg;
   int32_t dacOut1value, dacOut2value, deltaDACvalue;
@@ -44,6 +57,8 @@ GPTConfig gpt_config = {
   0
 };
 
+*/
+
 static const DACConfig dac_config = {
   .init         = 1, //2047U
   .datamode     = DAC_DHRM_12BIT_RIGHT,
@@ -64,10 +79,10 @@ void dac_init(void) {
   dacStart(&DACD1, &dac_config);
   dacStart(&DACD2, &dac_config);
 
-  gptObjectInit(&GPTD1);
+//  gptObjectInit(&GPTD1);
 
-  gptStart(&GPTD1, &gpt_config);
+//  gptStart(&GPTD1, &gpt_config);
 
-  gptStartContinuous(&GPTD1, 2);
+//  gptStartContinuous(&GPTD1, 2);
 
 }

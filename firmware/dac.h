@@ -24,14 +24,12 @@ Copyright 2020   Anders Thorsén thorsenanders@yahoo.com
 #include "hal_pal.h"
 #include "config.h"
 
-extern int32_t dacOut1value;
-extern int32_t dacOut2value;
 extern int32_t mean_I_SENSE;
 extern int32_t mean_I_SENSE_4T;;
 
 
 extern void dac_init(void);
-extern int32_t deltaDAC(int32_t ADCvalue);
+extern void dacOutput(int32_t outputPeak2Peak);
 
 
 #endif

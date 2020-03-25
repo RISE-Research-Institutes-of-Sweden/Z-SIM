@@ -54,8 +54,13 @@ Copyright 2019/2020   Joel Svensson	svenssonjoel@yahoo.se
 #define ADC_EXTRA1_PIN  2
 #define ADC_EXTRA2_PIN  3
 
+#define gpt3Freq    1000000U
+#define ADC1_periods 100
+
 //Load
 #define Rload 1.1e-3 //Ohm
+#define Cload 40    //Farad
+#define Lload  10e-3    //Henry
 
 
 #ifdef zSIM
