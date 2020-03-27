@@ -34,6 +34,12 @@
 #include "tokpar.h"
 #include "prelude.h"
 
+#define LISPBM_STACK_SIZE  256
+
+#define INPUT_STRING_SIZE  1024
+#define OUTPUT_STRING_SIZE 1024
+#define ERROR_STRING_SIZE  256
+
 #define REPL_WA_SIZE THD_WORKING_AREA_SIZE(10*2048)
 
 VALUE ext_set_led(VALUE *args, int argn) {
@@ -133,9 +139,10 @@ static THD_FUNCTION(repl, arg) {
 
   BaseSequentialStream *chp = (BaseSequentialStream *)arg;
 
-  size_t len = 1024;
-  char *str = malloc(1024);
-  char *outbuf = malloc(1024);
+  size_t len = INPUT_STRING_SIZE;
+  char *str = malloc(INPUT_STRING_SIZE);
+  char *err_str = malloc(ERROR_STRING_SIZE);
+  char *outbuf = malloc(OUTPUT_STRING_SIZE);
   int res = 0;
 
   heap_state_t heap_state;
@@ -156,7 +163,7 @@ static THD_FUNCTION(repl, arg) {
     return;
   }
 
-  res = eval_cps_init(true);
+  res = eval_cps_init(LISPBM_STACK_SIZE, true);
   if (res)
     chprintf(chp,"Evaluator initialized.\n\r");
   else {
@@ -201,21 +208,28 @@ static THD_FUNCTION(repl, arg) {
   while (1) {
     chThdSleepMilliseconds(100);
     chprintf(chp,"# ");
-    memset(str,0,len);
-    memset(outbuf,0, 1024);
+    memset(str,0,INPUT_STRING_SIZE);
+    memset(outbuf,0, OUTPUT_STRING_SIZE);
     inputline(chp,str, len);
-    chprintf(chp,"\n\r");
+    chprintf(chp,"\r\n");
 
     if (strncmp(str, ":info", 5) == 0) {
-      chprintf(chp,"##(Z-SIM)####################################################\n\r");
+      chprintf(chp,"##(Z-SIM)####################################################\r\n");
       chprintf(chp,"Used cons cells: %lu \n\r", heap_size - heap_num_free());
-      chprintf(chp,"ENV: "); simple_snprint(outbuf,1023, eval_cps_get_env()); chprintf(chp, "%s \n\r", outbuf);
+      res = print_value(outbuf, OUTPUT_STRING_SIZE,
+			err_str, ERROR_STRING_SIZE,
+			eval_cps_get_env());
+      if (res > 0) {
+	chprintf(chp,"ENV: %s\r\n");
+      } else {
+	chprintf(chp,"ERROR: %s\r\n");
+      }
       heap_get_state(&heap_state);
-      chprintf(chp,"GC counter: %lu\n\r", heap_state.gc_num);
-      chprintf(chp,"Recovered: %lu\n\r", heap_state.gc_recovered);
-      chprintf(chp,"Marked: %lu\n\r", heap_state.gc_marked);
-      chprintf(chp,"Free cons cells: %lu\n\r", heap_num_free());
-      chprintf(chp,"############################################################\n\r");
+      chprintf(chp,"GC counter: %lu\r\n", heap_state.gc_num);
+      chprintf(chp,"Recovered: %lu\r\n", heap_state.gc_recovered);
+      chprintf(chp,"Marked: %lu\r\n", heap_state.gc_marked);
+      chprintf(chp,"Free cons cells: %lu\r\n", heap_num_free());
+      chprintf(chp,"############################################################\r\n");
       memset(outbuf,0, 1024);
     } else if (strncmp(str, ":quit", 5) == 0) {
       break;
@@ -226,10 +240,14 @@ static THD_FUNCTION(repl, arg) {
 
       t = eval_cps_program(t);
 
-      if (dec_sym(t) == symrepr_eerror()) {
-	chprintf(chp,"Error\n");
+      res = print_value(outbuf, OUTPUT_STRING_SIZE,
+			err_str, OUTPUT_STRING_SIZE,
+			t);
+      
+      if (res > 0) {
+	chprintf(chp,"> %s\r\n", outbuf);
       } else {
-	chprintf(chp,"> "); simple_snprint(outbuf, 1023, t); chprintf(chp,"%s \n\r", outbuf);
+	chprintf(chp,"Error: %s\r\n", err_str);
       }
     }
   }
