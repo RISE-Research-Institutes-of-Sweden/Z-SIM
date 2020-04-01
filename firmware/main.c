@@ -33,18 +33,6 @@
 #include "led.h"
 #include "repl.h"
 
-extern int32_t dacOut1value;
-extern int32_t dacOut2value;
-extern int32_t mean_I_SENSE;
-extern int32_t mean_I_SENSE_4T;
-extern int32_t prevMean_I_SENSE_AC;
-extern int32_t prevMean_I_SENSE_4T_AC;
-extern int32_t intMean_I_SENSE_AC;
-extern int32_t intMean_I_SENSE_4T_AC;
-extern int32_t dMean_I_SENSE_AC_dt;
-extern int32_t dMean_I_SENSE_4T_AC_dt;
-
-
 
 int main(void) {
   halInit();
@@ -55,7 +43,7 @@ int main(void) {
   led_init();
   dac_init();
 
-  
+
   sduObjectInit(&SDU1);
   sduStart(&SDU1, &serusbcfg);
 
@@ -74,11 +62,22 @@ int main(void) {
   /*
    *  Main thread activity...
    */
+  char buff[64];
+
   while (true) {
-        chprintf((BaseSequentialStream *)&SDU1, "I_SENSE_AC: %d , I_SENSE_4T_AC: %d, prevI_SENSE_AC: %d , prevI_SENSE_4T_AC: %d, dMean_I_SENSE_4T_AC_dt: %d,  intMean_I_SENSE_4T_AC: %d\n\r", 
-            mean_I_SENSE-ADCmax/2, mean_I_SENSE_4T-ADCmax/2, prevMean_I_SENSE_AC, prevMean_I_SENSE_4T_AC,dMean_I_SENSE_4T_AC_dt,intMean_I_SENSE_4T_AC);
+        snprintf(buff, 64 , "ADC_I_SENSE_AC %1.2f", mean_ADC_I_SENSE_AC);
+        chprintf((BaseSequentialStream *)&SDU1,"%s, ",buff);
+        snprintf(buff, 64 , "ADC_I_SENSE_4T_AC %1.2f", mean_ADC_I_SENSE_4T_AC);
+        chprintf((BaseSequentialStream *)&SDU1,"%s, ",buff);
+        snprintf(buff, 64 , "prev_ADC_I_SENSE_AC %1.2f", prevmean_ADC_I_SENSE_AC);
+        chprintf((BaseSequentialStream *)&SDU1,"%s, ",buff);
+        snprintf(buff, 64 , "prev_ADC_I_SENSE_4T_AC %1.2f", prevmean_ADC_I_SENSE_4T_AC);
+        chprintf((BaseSequentialStream *)&SDU1,"%s, ",buff);
+        snprintf(buff, 64 , "dADC_I_SENSE_4T_AC_dt %1.2f", dmean_ADC_I_SENSE_4T_AC_dt);
+        chprintf((BaseSequentialStream *)&SDU1,"%s, ",buff);
+        snprintf(buff, 64 , "intADC_I_SENSE_4T_AC %1.2f", intmean_ADC_I_SENSE_4T_AC);
+        chprintf((BaseSequentialStream *)&SDU1,"%s \r\n",buff);
         chThdSleepMilliseconds(500);
-        //chprintf((BaseSequentialStream *)&SDU1, "\033[2J\033[1;1H");
 
       }
   }

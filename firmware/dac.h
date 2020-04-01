@@ -24,12 +24,12 @@ Copyright 2020   Anders Thorsén thorsenanders@yahoo.com
 #include "hal_pal.h"
 #include "config.h"
 
-extern int32_t mean_I_SENSE;
-extern int32_t mean_I_SENSE_4T;;
+extern float mean_ADC_I_SENSE;
+extern float mean_ADC_I_SENSE_4T;;
 
 
 extern void dac_init(void);
-extern void dacOutput(int32_t outputPeak2Peak);
+extern void dacOutput(float outputPeak2Peak);
 
 
 #endif

@@ -24,8 +24,8 @@ static adcsample_t samples[2];
 bool flag_ADC1 = FALSE;
 bool flag_ADC2 = FALSE;
 bool flag_ADC3 = FALSE;
-int32_t int32_t mean_I_SENSE;
-int32_t mean_I_SENSE_4T;;
+int32_t int32_t mean_ADC_I_SENSE;
+int32_t mean_ADC_I_SENSE_4T;;
 int32_t lastvalue_ADC2;
 int32_t lastvalue_ADC3;
 
@@ -149,11 +149,11 @@ static THD_WORKING_AREA(waThdADC1, 512);
     for (ii = 0; ii < MY_NUM_CH_ADC1 * MY_SAMPLING_NUMBER_ADC1; ii++) {
       mean += sample_buff_ADC1[ii];
     }
-    meint32_t mean_I_SENSE;
-int3int32_t mean_I_SENSE;
-int32_t mean_I_SENSE_4T;SE_4T;H_ADC1 * MY_SAMPLING_NUMBER_ADC1;
-//    int32_t mean_I_SENSE_4T = (float)mean;
-    int32_t mean_I_SENSE_4T = (int32_t)sample_buff_ADC1[0];
+    meint32_t mean_ADC_I_SENSE;
+int3int32_t mean_ADC_I_SENSE;
+int32_t mean_ADC_I_SENSE_4T;SE_4T;H_ADC1 * MY_SAMPLING_NUMBER_ADC1;
+//    int32_t mean_ADC_I_SENSE_4T = (float)mean;
+    int32_t mean_ADC_I_SENSE_4T = (int32_t)sample_buff_ADC1[0];
     flag_ADC1 = TRUE;
   }
 }
@@ -261,7 +261,7 @@ float uIn(float iIn) {
    return Rload*iIn;
 }
 
-int32_t deltaDAC(int32_t ADCvalue) {
+int32_t uOPp2p(int32_t ADCvalue) {
   float uRshunt, iRshunt;
   uRshunt = UADCmax/GainCurrentShunt*((float)ADCvalue/(float)ADCmax-0.5);
   iRshunt = uRshunt/Rshunt;

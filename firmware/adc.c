@@ -19,23 +19,18 @@
 
 #include "adc.h"
 
-//static adcsample_t samples[2];
-
-bool flag_ADC1 = FALSE;
 bool flag_ADC2 = FALSE;
 bool flag_ADC3 = FALSE;
-int32_t mean_I_SENSE;
-int32_t mean_I_SENSE_4T;
-int32_t mean_I_SENSE_AC;
-int32_t mean_I_SENSE_4T_AC;
+float mean_ADC_I_SENSE_AC;
+float mean_ADC_I_SENSE_4T_AC;
 int32_t lastvalue_ADC2;
 int32_t lastvalue_ADC3;
-int32_t prevMean_I_SENSE_AC;
-int32_t prevMean_I_SENSE_4T_AC;
-int32_t intMean_I_SENSE_AC = 0;
-int32_t intMean_I_SENSE_4T_AC = 0;
-int32_t dMean_I_SENSE_AC_dt;
-int32_t dMean_I_SENSE_4T_AC_dt;
+float prevmean_ADC_I_SENSE_AC;
+float prevmean_ADC_I_SENSE_4T_AC;
+float intmean_ADC_I_SENSE_AC = 0;
+float intmean_ADC_I_SENSE_4T_AC = 0;
+float dmean_ADC_I_SENSE_AC_dt;
+float dmean_ADC_I_SENSE_4T_AC_dt;
 
 
 /*===========================================================================*/
@@ -74,13 +69,49 @@ static adcsample_t sample_buff_ADC1[MY_NUM_CH_ADC1 * MY_SAMPLING_NUMBER_ADC1];
 static adcsample_t sample_buff_ADC2[MY_NUM_CH_ADC2 * MY_SAMPLING_NUMBER_ADC2];
 static adcsample_t sample_buff_ADC3[MY_NUM_CH_ADC3 * MY_SAMPLING_NUMBER_ADC3];
 
+float ADC1Freq = ((float) gpt3Freq) /((float) ADC1_periods);
+
+
+
+float R_voltage(float current, float resistance) {
+
+   return 1000*current*(resistance-Rshunt);
+}
+
+float C_voltage(float current, float Ii_t_ack, float capacitance) {
+
+    return 1/capacitance*Ii_t_ack-current*Rshunt;
+}
+
+
+float L_voltage(float current, float prevCurrent, float inductance, float resistance, float dt) {
+
+    return current*(resistance-Rshunt) + inductance*(current-prevCurrent/dt);
+}
+
+float uIn(float iIn, float diIndt, float intiIn) {
+
+   return Rload*iIn+ Lload*diIndt+1/Cload*intiIn;
+}
+
+
+
+float uOPp2p(float ADCvalue_AC, float dADCvalue_AC_dt, float intADCvalue_AC) {
+  float uRshunt, duRshuntdt, int_uRshunt, iRshunt, diRshuntdt, int_iRshunt;
+  uRshunt = UADCmax/GainCurrentShunt*(ADCvalue_AC/ADCmax);
+  iRshunt = uRshunt/Rshunt;
+  duRshuntdt = UADCmax/GainCurrentShunt*(dADCvalue_AC_dt/ADCmax);
+  diRshuntdt = duRshuntdt/Rshunt;
+  int_uRshunt = UADCmax/GainCurrentShunt*(intADCvalue_AC/ADCmax);
+  int_iRshunt = int_uRshunt/Rshunt;
+
+  return (uIn(iRshunt, diRshuntdt, int_iRshunt)-uRshunt);
+}
+
+
 /*
 * ADC streaming callback
 */
-/*
- * ADC streaming callback.
- */
-
  /*
   * From https://github.com/resset/STM32F4-Discovery-example-code/blob/master/myADC.c
   * This callback is called everytime the buffer is filled or half-filled
@@ -93,44 +124,42 @@ static adcsample_t sample_buff_ADC3[MY_NUM_CH_ADC3 * MY_SAMPLING_NUMBER_ADC3];
   */
 
 
-size_t nx = 0, ny = 0;
 static void adccallback(ADCDriver *adcp) {
 
 
   unsigned int i,j;
-  uint32_t sum_I_SENSE=0;
-  uint32_t sum_I_SENSE_4T=0;
+  uint32_t sum_ADC_I_SENSE=0;
+  uint32_t sum_ADC_I_SENSE_4T=0;
+  float mean_ADC_I_SENSE, mean_ADC_I_SENSE_4T;
 
 
   if (adcIsBufferComplete(adcp)) {
-    nx += 1;
     j=buffer_size_ADC1/2;  // Upper part of buffer
   }
   else {
-    ny += 1;
     j=0;  //Lower part of buffer
   }
 
   for (i=0; i< MY_SAMPLING_NUMBER_ADC1/2;i++){
-    sum_I_SENSE += sample_buff_ADC1[j+i*MY_NUM_CH_ADC1+1];
-    sum_I_SENSE_4T += sample_buff_ADC1[j+i*MY_NUM_CH_ADC1+0];
+    sum_ADC_I_SENSE += sample_buff_ADC1[j+i*MY_NUM_CH_ADC1+1];
+    sum_ADC_I_SENSE_4T += sample_buff_ADC1[j+i*MY_NUM_CH_ADC1+0];
   }
 
-  mean_I_SENSE = sum_I_SENSE / (MY_SAMPLING_NUMBER_ADC1/2);
-  mean_I_SENSE_4T = sum_I_SENSE_4T / (MY_SAMPLING_NUMBER_ADC1/2);
+  mean_ADC_I_SENSE = ((float) sum_ADC_I_SENSE) / ((float) MY_SAMPLING_NUMBER_ADC1/2);
+  mean_ADC_I_SENSE_4T = ((float) sum_ADC_I_SENSE_4T) / ((float) MY_SAMPLING_NUMBER_ADC1/2);
 
-  prevMean_I_SENSE_AC = mean_I_SENSE_AC;
-  prevMean_I_SENSE_4T_AC = mean_I_SENSE_4T_AC;
-  mean_I_SENSE_AC = mean_I_SENSE - ADCmax/2;
-  mean_I_SENSE_4T_AC = mean_I_SENSE_4T - ADCmax/2;
+  prevmean_ADC_I_SENSE_AC = mean_ADC_I_SENSE_AC;
+  prevmean_ADC_I_SENSE_4T_AC = mean_ADC_I_SENSE_4T_AC;
+  mean_ADC_I_SENSE_AC = mean_ADC_I_SENSE - (float) ADCmax/2;
+  mean_ADC_I_SENSE_4T_AC = mean_ADC_I_SENSE_4T - (float) ADCmax/2;
 
-  dMean_I_SENSE_AC_dt = (mean_I_SENSE_AC-prevMean_I_SENSE_AC)*(gpt3Freq/ADC1_periods);
-  dMean_I_SENSE_4T_AC_dt = (mean_I_SENSE_4T_AC-prevMean_I_SENSE_4T_AC)*(gpt3Freq/ADC1_periods);
+  dmean_ADC_I_SENSE_AC_dt = (mean_ADC_I_SENSE_AC-prevmean_ADC_I_SENSE_AC)*ADC1Freq;
+  dmean_ADC_I_SENSE_4T_AC_dt = (mean_ADC_I_SENSE_4T_AC-prevmean_ADC_I_SENSE_4T_AC)*ADC1Freq;
 
-  intMean_I_SENSE_AC += (mean_I_SENSE_AC+prevMean_I_SENSE_AC)/(2*(gpt3Freq/ADC1_periods));
-  intMean_I_SENSE_4T_AC += (mean_I_SENSE_4T_AC+prevMean_I_SENSE_4T_AC)/(2*(gpt3Freq/ADC1_periods));
+  intmean_ADC_I_SENSE_AC += (mean_ADC_I_SENSE_AC+prevmean_ADC_I_SENSE_AC)/2 * (1/ADC1Freq);
+  intmean_ADC_I_SENSE_4T_AC += (mean_ADC_I_SENSE_4T_AC+prevmean_ADC_I_SENSE_4T_AC)/2 * (1/ADC1Freq);
 
-  dacOutput(deltaDAC(mean_I_SENSE_4T_AC, dMean_I_SENSE_4T_AC_dt, intMean_I_SENSE_4T_AC));
+  dacOutput(uOPp2p(mean_ADC_I_SENSE_4T_AC, dmean_ADC_I_SENSE_4T_AC_dt, intmean_ADC_I_SENSE_4T_AC));
 
 }
 
@@ -325,37 +354,4 @@ void adc_init(void) {
 //  chThdCreateStatic(waThdADC2, sizeof(waThdADC2), NORMALPRIO, ThdADC2, NULL);
 //  chThdCreateStatic(waThdADC3, sizeof(waThdADC3), NORMALPRIO, ThdADC3, NULL);
 
-}
-
-float R_voltage(float current, float resistance) {
-
-   return 1000*current*(resistance-Rshunt);
-}
-
-float C_voltage(float current, float Ii_t_ack, float capacitance) {
-
-    return 1/capacitance*Ii_t_ack-current*Rshunt;
-}
-
-
-float L_voltage(float current, float prevCurrent, float inductance, float resistance, float dt) {
-
-    return current*(resistance-Rshunt) + inductance*(current-prevCurrent/dt);
-}
-
-float uIn(float iIn, float diIndt, float intiIn) {
-
-   return Rload*iIn+ Lload*diIndt+1/Cload*intiIn;
-}
-
-int32_t deltaDAC(int32_t ADCvalue_AC, int32_t dADCvalue_AC_dt, int32_t intADCvalue_AC) {
-  float uRshunt, duRshuntdt, int_uRshunt, iRshunt, diRshuntdt, int_iRshunt;
-  uRshunt = UADCmax/GainCurrentShunt*((float)ADCvalue_AC/(float)ADCmax);
-  iRshunt = uRshunt/Rshunt;
-  duRshuntdt = UADCmax/GainCurrentShunt*((float)dADCvalue_AC_dt/(float)ADCmax);
-  diRshuntdt = duRshuntdt/Rshunt;
-  int_uRshunt = UADCmax/GainCurrentShunt*((float)intADCvalue_AC/(float)ADCmax);
-  int_iRshunt = int_uRshunt/Rshunt;
-
-  return (int32_t) (float)DACmax/(GainOP*UDACmax)*(uIn(iRshunt, diRshuntdt, int_iRshunt)-uRshunt);
 }

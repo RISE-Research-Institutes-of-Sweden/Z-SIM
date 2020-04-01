@@ -55,7 +55,7 @@ Copyright 2019/2020   Joel Svensson	svenssonjoel@yahoo.se
 #define ADC_EXTRA2_PIN  3
 
 #define gpt3Freq    1000000U
-#define ADC1_periods 100
+#define ADC1_periods 101
 
 //Load
 #define Rload 1.1e-3 //Ohm

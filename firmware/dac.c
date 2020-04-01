@@ -19,13 +19,24 @@
 #include "dac.h"
 #include <math.h>
 
+float GainuOP2dac = ((float) DACmax)/((float) GainOP* ((float) UDACmax));
 
-void dacOutput(int32_t outputPeak2Peak) {
-  
-  int32_t dacOut1value, dacOut2value;
+int16_t outputDACAmpCalc(float outputOPPeak2Peak) {
+  return (int16_t) GainuOP2dac*outputOPPeak2Peak;
+}
 
-  dacOut1value = (DACmax+outputPeak2Peak)/2;
-  dacOut2value = (DACmax-outputPeak2Peak)/2;
+
+void dacOutput(float outputOPPeak2Peak) {
+  // Fundera på att ändra till 16-bit uint
+
+  uint16_t dacOut1value, dacOut2value;
+  uint16_t outputDACAmp;
+
+  outputDACAmp = outputDACAmpCalc(outputOPPeak2Peak);
+
+// Kolla max och min värde
+  dacOut1value = DACmax/2+outputDACAmp;
+  dacOut2value = DACmax/2-outputDACAmp;
 
   dacPutChannelX(&DACD1, 0, dacOut1value);
   dacPutChannelX(&DACD2, 0, dacOut2value);
@@ -33,31 +44,6 @@ void dacOutput(int32_t outputPeak2Peak) {
   palTogglePad(DAC_GPIO, DAC2_PIN);
 
 }
-
-/*
-void toggler(GPTDriver *arg) {
-  (void) arg;
-  int32_t dacOut1value, dacOut2value, deltaDACvalue;
-
-  deltaDACvalue = deltaDAC(mean_I_SENSE_4T);
-  dacOut1value = (DACmax+10*deltaDACvalue)/2;
-  dacOut2value = (DACmax-10*deltaDACvalue)/2;
-
-  dacPutChannelX(&DACD1, 0, dacOut1value);
-  dacPutChannelX(&DACD2, 0, dacOut2value);
-  palTogglePad(DAC_GPIO, DAC1_PIN);
-  palTogglePad(DAC_GPIO, DAC2_PIN);
-
-}
-
-GPTConfig gpt_config = {
-  192000,  //96000,
-  toggler,
-  TIM_CR2_MMS_1, // What ???
-  0
-};
-
-*/
 
 static const DACConfig dac_config = {
   .init         = 1, //2047U
@@ -78,11 +64,5 @@ void dac_init(void) {
 
   dacStart(&DACD1, &dac_config);
   dacStart(&DACD2, &dac_config);
-
-//  gptObjectInit(&GPTD1);
-
-//  gptStart(&GPTD1, &gpt_config);
-
-//  gptStartContinuous(&GPTD1, 2);
 
 }
