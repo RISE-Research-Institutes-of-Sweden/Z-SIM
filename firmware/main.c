@@ -72,7 +72,8 @@ int inputline(BaseSequentialStream *chp, char *buffer, int size) {
 int main(void) {
 
   char command_str[COMMAND_STR_SIZE];
-
+  char buff[64];
+  
   halInit();
   chSysInit();
 
@@ -99,50 +100,62 @@ int main(void) {
   /*
    *  Main thread activity...
    */
-  char buff[64];
 
   float Rload_temp=0;
   float Lload_temp=0;
   float Cload_temp=100;
 
+  int n = 0;
 
   while (true) {
 
     memset(buff,0,64);
     memset(command_str,0,COMMAND_STR_SIZE);
+    bool command_ok = false;
 
-    inputline((BaseSequentialStream *)&SDU1, command_str,COMMAND_STR_SIZE);
-    chprintf((BaseSequentialStream *)&SDU1,"\r\n");
+    n = inputline((BaseSequentialStream *)&SDU1, command_str,COMMAND_STR_SIZE);
+    chprintf((BaseSequentialStream *)&SDU1,"\r\n", n);
+
+    
 
     if (strncmp(command_str,"Help",4)==0) {
       chprintf((BaseSequentialStream *)&SDU1,"DCDC enable: EnableDCDC\r\n");
+      command_ok = true;
     }
 
     if (strncmp(command_str,"EnableDCDC",10)==0) {
       dcdc_enable();
       chprintf((BaseSequentialStream *)&SDU1,"DCDC enabled\r\n");
+      command_ok = true;
     }
 
-    if (strncmp(command_str,"Rload",5)==0) {
+    if (strncmp(command_str,"Rload",5)==0 && strlen(command_str) >= 7) {
       sscanf(command_str,"Rload %f",&Rload_temp);
-      snprintf(buff, 64 , "Rload %e", Rload_temp);
-      chprintf((BaseSequentialStream *)&SDU1,"%s\r\n", buff);
+      Rload = Rload_temp;
+      command_ok = true;
     }
 
     if (strncmp(command_str,"Lload",5)==0) {
       sscanf(command_str,"Lload %f",&Lload_temp);
-      snprintf(buff, 64 , "Lload %e", Lload_temp);
-      chprintf((BaseSequentialStream *)&SDU1,"%s\r\n", buff);
+      Lload = Lload_temp;
+      command_ok = true;
     }
 
     if (strncmp(command_str,"Cload",5)==0) {
       sscanf(command_str,"Cload %f",&Cload_temp);
-      snprintf(buff, 64 , "Cload %e", Cload_temp);
-      chprintf((BaseSequentialStream *)&SDU1,"%s\r\n", buff);
+      Cload = Cload_temp;
+      command_ok = true;
+     
     }
 
-    streamPut((BaseSequentialStream *)&SDU1,'z'); /* output backspace character */
-    chThdSleepMilliseconds(500);
+
+    if (command_ok) {
+      chprintf((BaseSequentialStream *)&SDU1,"Ok\r\n");
+    } else {
+       chprintf((BaseSequentialStream *)&SDU1,"Incorrect Command\r\n");
+    }
+    
+    chThdSleepMilliseconds(100);
     /*
         snprintf(buff, 64 , "ADC_I_SENSE_AC %1.2f", mean_ADC_I_SENSE_AC);
         chprintf(
