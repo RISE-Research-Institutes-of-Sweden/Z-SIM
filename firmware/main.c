@@ -71,8 +71,8 @@ int inputline(BaseSequentialStream *chp, char *buffer, int size) {
 
 int main(void) {
 
-  char command_str[COMMAND_STR_SIZE]; 
-  
+  char command_str[COMMAND_STR_SIZE];
+
   halInit();
   chSysInit();
 
@@ -101,12 +101,47 @@ int main(void) {
    */
   char buff[64];
 
+  float Rload_temp=0;
+  float Lload_temp=0;
+  float Cload_temp=100;
+
+
   while (true) {
 
+    memset(buff,0,64);
+    memset(command_str,0,COMMAND_STR_SIZE);
+
     inputline((BaseSequentialStream *)&SDU1, command_str,COMMAND_STR_SIZE);
+    chprintf((BaseSequentialStream *)&SDU1,"\r\n");
 
-    chprintf((BaseSequentialStream *)&SDU1,"%s, ",command_str);
+    if (strncmp(command_str,"Help",4)==0) {
+      chprintf((BaseSequentialStream *)&SDU1,"DCDC enable: EnableDCDC\r\n");
+    }
 
+    if (strncmp(command_str,"EnableDCDC",10)==0) {
+      dcdc_enable();
+      chprintf((BaseSequentialStream *)&SDU1,"DCDC enabled\r\n");
+    }
+
+    if (strncmp(command_str,"Rload",5)==0) {
+      sscanf(command_str,"Rload %f",&Rload_temp);
+      snprintf(buff, 64 , "Rload %e", Rload_temp);
+      chprintf((BaseSequentialStream *)&SDU1,"%s\r\n", buff);
+    }
+
+    if (strncmp(command_str,"Lload",5)==0) {
+      sscanf(command_str,"Lload %f",&Lload_temp);
+      snprintf(buff, 64 , "Lload %e", Lload_temp);
+      chprintf((BaseSequentialStream *)&SDU1,"%s\r\n", buff);
+    }
+
+    if (strncmp(command_str,"Cload",5)==0) {
+      sscanf(command_str,"Cload %f",&Cload_temp);
+      snprintf(buff, 64 , "Cload %e", Cload_temp);
+      chprintf((BaseSequentialStream *)&SDU1,"%s\r\n", buff);
+    }
+
+    streamPut((BaseSequentialStream *)&SDU1,'z'); /* output backspace character */
     chThdSleepMilliseconds(500);
     /*
         snprintf(buff, 64 , "ADC_I_SENSE_AC %1.2f", mean_ADC_I_SENSE_AC);
@@ -121,7 +156,7 @@ int main(void) {
         chprintf((BaseSequentialStream *)&SDU1,"%s, ",buff);
         snprintf(buff, 64 , "intADC_I_SENSE_4T_AC %1.2f", intmean_ADC_I_SENSE_4T_AC);
         chprintf((BaseSequentialStream *)&SDU1,"%s \r\n",buff);
-   
+
 
       } */
   }
