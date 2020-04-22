@@ -58,9 +58,6 @@ Copyright 2019/2020   Joel Svensson	svenssonjoel@yahoo.se
 #define ADC1_periods 101
 
 //Load
-#define Rload 1.1e-3 //Ohm
-#define Cload 40    //Farad
-#define Lload  10e-3    //Henry
 
 
 #ifdef zSIM

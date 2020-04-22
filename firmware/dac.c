@@ -25,7 +25,6 @@ int16_t outputDACAmpCalc(float outputOPPeak2Peak) {
   return (int16_t) GainuOP2dac*outputOPPeak2Peak;
 }
 
-
 void dacOutput(float outputOPPeak2Peak) {
   // Fundera på att ändra till 16-bit uint
 

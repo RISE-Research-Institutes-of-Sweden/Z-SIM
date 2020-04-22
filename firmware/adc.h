@@ -33,6 +33,12 @@ extern float intmean_ADC_I_SENSE_4T_AC;
 extern float dmean_ADC_I_SENSE_AC_dt;
 extern float dmean_ADC_I_SENSE_4T_AC_dt;
 
+extern float Rload, Lload, Cload;
+extern uint16_t loadConfig;
+
+#define RESISTIVE   0
+#define INDUCTIVE   1
+#define CAPACITIVE  2
 
 extern void adc_init(void);
 extern void dacOutput(float outputPeak2Peak);

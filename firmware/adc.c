@@ -32,6 +32,9 @@ float intmean_ADC_I_SENSE_4T_AC = 0;
 float dmean_ADC_I_SENSE_AC_dt;
 float dmean_ADC_I_SENSE_4T_AC_dt;
 
+float Rload = 0, Lload =0 , Cload = 100;
+uint16_t loadConfig = RESISTIVE; //IDUCTIVE, CAPACITIVE
+
 
 /*===========================================================================*/
 /*GPT3 configuration. Used for trigging the ADC.                             */
@@ -91,7 +94,15 @@ float L_voltage(float current, float prevCurrent, float inductance, float resist
 
 float uIn(float iIn, float diIndt, float intiIn) {
 
-   return Rload*iIn+ Lload*diIndt+1/Cload*intiIn;
+  switch (loadConfig) {
+    case RESISTIVE:
+      return Rload*iIn;
+    case INDUCTIVE:
+      return Rload*iIn+ Lload*diIndt;
+    case CAPACITIVE:
+      return 0; //TBD
+  }
+  return 0;
 }
 
 
@@ -126,12 +137,10 @@ float uOPp2p(float ADCvalue_AC, float dADCvalue_AC_dt, float intADCvalue_AC) {
 
 static void adccallback(ADCDriver *adcp) {
 
-
   unsigned int i,j;
   uint32_t sum_ADC_I_SENSE=0;
   uint32_t sum_ADC_I_SENSE_4T=0;
   float mean_ADC_I_SENSE, mean_ADC_I_SENSE_4T;
-
 
   if (adcIsBufferComplete(adcp)) {
     j=buffer_size_ADC1/2;  // Upper part of buffer
