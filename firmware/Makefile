@@ -127,7 +127,6 @@ CSRC = $(ALLCSRC) \
        main.c \
        usbcfg.c \
        led.c \
-       repl.c \
        dcdc.c \
 			 adc.c \
 			 dac.c \
@@ -178,13 +177,13 @@ UDEFS = -D_32_BIT_ -D_PRELUDE
 UADEFS =
 
 # List all user directories here
-UINCDIR = ./LispBM/include
+UINCDIR = 
 
 # List the user directory to look for the libraries here
-ULIBDIR = ./LispBM/build/stm32f4
+ULIBDIR = 
 
 # List all user libraries here
-ULIBS = -lm -llispbm
+ULIBS = -lm
 
 #
 # End of user section
@@ -229,5 +228,13 @@ CPPWARN = -Wall -Wextra -Wundef
 # Compiler settings
 ##############################################################################
 
+
 RULESPATH = $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC/mk
 include $(RULESPATH)/rules.mk
+
+
+flash:
+	openocd -f ./stm32f407g.cfg -c "reset_config trst_only combined" -c "program build/ZSIM_FIRMWARE.elf verify reset exit"
+
+
+

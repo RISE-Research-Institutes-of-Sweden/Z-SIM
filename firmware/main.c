@@ -31,10 +31,48 @@
 #include "dac.h"
 #include "dcdc.h"
 #include "led.h"
-#include "repl.h"
 
+#define COMMAND_STR_SIZE 256
+
+
+
+int inputline(BaseSequentialStream *chp, char *buffer, int size) {
+  int n = 0;
+  unsigned char c;
+  for (n = 0; n < size - 1; n++) {
+
+    c = streamGet(chp);
+    switch (c) {
+    case 127: /* fall through to below */
+    case '\b': /* backspace character received */
+      if (n > 0)
+        n--;
+      buffer[n] = 0;
+      streamPut(chp,0x8); /* output backspace character */
+      n--; /* set up next iteration to deal with preceding char location */
+      break;
+    case '\n': /* fall through to \r */
+    case '\r':
+      buffer[n] = 0;
+      return n;
+    default:
+      if (isprint(c)) { /* ignore non-printable characters */
+        streamPut(chp,c);
+        buffer[n] = c;
+      } else {
+        n -= 1;
+      }
+      break;
+    }
+  }
+  buffer[size - 1] = 0;
+  return 0; // Filled up buffer without reading a linebreak
+}
 
 int main(void) {
+
+  char command_str[COMMAND_STR_SIZE]; 
+  
   halInit();
   chSysInit();
 
@@ -42,7 +80,6 @@ int main(void) {
   dcdc_init();
   led_init();
   dac_init();
-
 
   sduObjectInit(&SDU1);
   sduStart(&SDU1, &serusbcfg);
@@ -58,15 +95,22 @@ int main(void) {
   usbConnectBus(serusbcfg.usbp);
   chThdSleepMilliseconds(500);
 
-  createReplThread((BaseSequentialStream *)&SDU1);
+  //
   /*
    *  Main thread activity...
    */
   char buff[64];
 
   while (true) {
+
+    inputline((BaseSequentialStream *)&SDU1, command_str,COMMAND_STR_SIZE);
+
+    chprintf((BaseSequentialStream *)&SDU1,"%s, ",command_str);
+
+    chThdSleepMilliseconds(500);
+    /*
         snprintf(buff, 64 , "ADC_I_SENSE_AC %1.2f", mean_ADC_I_SENSE_AC);
-        chprintf((BaseSequentialStream *)&SDU1,"%s, ",buff);
+        chprintf(
         snprintf(buff, 64 , "ADC_I_SENSE_4T_AC %1.2f", mean_ADC_I_SENSE_4T_AC);
         chprintf((BaseSequentialStream *)&SDU1,"%s, ",buff);
         snprintf(buff, 64 , "prev_ADC_I_SENSE_AC %1.2f", prevmean_ADC_I_SENSE_AC);
@@ -77,7 +121,8 @@ int main(void) {
         chprintf((BaseSequentialStream *)&SDU1,"%s, ",buff);
         snprintf(buff, 64 , "intADC_I_SENSE_4T_AC %1.2f", intmean_ADC_I_SENSE_4T_AC);
         chprintf((BaseSequentialStream *)&SDU1,"%s \r\n",buff);
-        chThdSleepMilliseconds(500);
+   
 
-      }
+      } */
   }
+}
