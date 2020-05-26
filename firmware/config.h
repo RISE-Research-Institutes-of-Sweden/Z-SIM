@@ -19,9 +19,8 @@ Copyright 2019/2020   Joel Svensson	svenssonjoel@yahoo.se
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
-//define zSIM TRUE
+//#define zSIM TRUE
 #define STM32F4DISC TRUE
-
 
 // Harware Configuration
 #define Rshunt 10.0e-3 //Ohm

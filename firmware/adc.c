@@ -32,7 +32,7 @@ float intmean_ADC_I_SENSE_4T_AC = 0;
 float dmean_ADC_I_SENSE_AC_dt;
 float dmean_ADC_I_SENSE_4T_AC_dt;
 
-float Rload = 0, Lload =0 , Cload = 100;
+float Rload = 1, Lload =0 , Cload = 100;
 uint16_t loadConfig = RESISTIVE; //IDUCTIVE, CAPACITIVE
 
 
@@ -92,7 +92,7 @@ float L_voltage(float current, float prevCurrent, float inductance, float resist
     return current*(resistance-Rshunt) + inductance*(current-prevCurrent/dt);
 }
 
-float uIn(float iIn, float diIndt, float intiIn) {
+float uIn(float iIn, float diIndt, float intIn) {
 
   switch (loadConfig) {
     case RESISTIVE:
@@ -119,7 +119,7 @@ float uOPp2p(float ADCvalue_AC, float dADCvalue_AC_dt, float intADCvalue_AC) {
   return (uIn(iRshunt, diRshuntdt, int_iRshunt)-uRshunt);
 }
 
-
+uint16_t loadConfig;
 /*
 * ADC streaming callback
 */

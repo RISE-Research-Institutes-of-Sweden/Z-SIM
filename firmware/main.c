@@ -31,7 +31,7 @@
 #include "dac.h"
 #include "dcdc.h"
 #include "led.h"
-
+//uint16_t loadConfig;
 #define COMMAND_STR_SIZE 256
 
 
@@ -73,7 +73,7 @@ int main(void) {
 
   char command_str[COMMAND_STR_SIZE];
   char buff[64];
-  
+
   halInit();
   chSysInit();
 
@@ -101,10 +101,10 @@ int main(void) {
    *  Main thread activity...
    */
 
-  float Rload_temp=0;
-  float Lload_temp=0;
-  float Cload_temp=100;
-
+  float Rload_temp=Rload;
+  float Lload_temp=Lload;
+  float Cload_temp=Cload;
+  unsigned char vsel_temp = 1;
   int n = 0;
 
   while (true) {
@@ -116,10 +116,16 @@ int main(void) {
     n = inputline((BaseSequentialStream *)&SDU1, command_str,COMMAND_STR_SIZE);
     chprintf((BaseSequentialStream *)&SDU1,"\r\n", n);
 
-    
+
 
     if (strncmp(command_str,"Help",4)==0) {
-      chprintf((BaseSequentialStream *)&SDU1,"DCDC enable: EnableDCDC\r\n");
+      chprintf((BaseSequentialStream *)&SDU1,"DCDC enablet: EnableDCDC\r\n");
+      chprintf((BaseSequentialStream *)&SDU1,"DCDC disable: DisableDCDC\r\n");
+      chprintf((BaseSequentialStream *)&SDU1,"No value in following responds with stored value\r\n");
+      chprintf((BaseSequentialStream *)&SDU1,"Rload /resistance in Ohm/\r\n");
+      chprintf((BaseSequentialStream *)&SDU1,"Lload /inductance in Henry/\r\n");
+      chprintf((BaseSequentialStream *)&SDU1,"Cload /capacitance in Farad/\r\n");
+      chprintf((BaseSequentialStream *)&SDU1,"Configuration (0=RESISTIVE (R), 1=INDUCTIVE (R+L), 2=CAPACITIVE (R//C))\r\n");
       command_ok = true;
     }
 
@@ -129,9 +135,17 @@ int main(void) {
       command_ok = true;
     }
 
-    if (strncmp(command_str,"Rload",5)==0 && strlen(command_str) >= 7) {
+    if (strncmp(command_str,"DisableDCDC",10)==0) {
+      dcdc_disable();
+      chprintf((BaseSequentialStream *)&SDU1,"DCDC disabled\r\n");
+      command_ok = true;
+    }
+
+    if (strncmp(command_str,"Rload",5)==0 && strlen(command_str) >= 5) {
       sscanf(command_str,"Rload %f",&Rload_temp);
       Rload = Rload_temp;
+      chsnprintf(buff, 64 , "Rload %f", Rload);
+      chprintf((BaseSequentialStream *)&SDU1,"%s\r\n", buff);
       command_ok = true;
     }
 
@@ -145,8 +159,21 @@ int main(void) {
       sscanf(command_str,"Cload %f",&Cload_temp);
       Cload = Cload_temp;
       command_ok = true;
-     
     }
+
+    if (strncmp(command_str,"vsel",4)==0) {
+      sscanf(command_str,"vsel %s",&vsel_temp);
+      dcdc_vsel_set(vsel_temp);
+
+      chprintf((BaseSequentialStream *)&SDU1,"Pin 1: %s, %c\r\n", vsel_temp, (vsel_temp & 1));
+      chprintf((BaseSequentialStream *)&SDU1,"Pin 2: %s, %c\r\n", vsel_temp, ((vsel_temp >> 1)));
+      chprintf((BaseSequentialStream *)&SDU1,"Pin 3: %s, %c\r\n", vsel_temp, ((vsel_temp >> 2) & 1));
+      chprintf((BaseSequentialStream *)&SDU1,"Pin 4: %s, %c\r\n", vsel_temp, ((vsel_temp >> 3) & 1));
+      chprintf((BaseSequentialStream *)&SDU1,"Pin 5: %s, %c\r\n", vsel_temp, ((vsel_temp >> 4) & 1));
+
+      command_ok = true;
+    }
+
 
 
     if (command_ok) {
@@ -154,7 +181,7 @@ int main(void) {
     } else {
        chprintf((BaseSequentialStream *)&SDU1,"Incorrect Command\r\n");
     }
-    
+
     chThdSleepMilliseconds(100);
     /*
         snprintf(buff, 64 , "ADC_I_SENSE_AC %1.2f", mean_ADC_I_SENSE_AC);
