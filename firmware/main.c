@@ -174,6 +174,14 @@ int main(void) {
       command_ok = true;
     }
 
+    if (strncmp(command_str,"ADC?",4)==0) {
+      chprintf((BaseSequentialStream *)&SDU1,"ADC1 = %f\r\n", mean_ADC_I_SENSE);
+      chprintf((BaseSequentialStream *)&SDU1,"ADC1_delta = %f\r\n", mean_ADC_I_SENSE_AC);
+      chprintf((BaseSequentialStream *)&SDU1,"ADC2 = %f\r\n", mean_ADC_I_SENSE_4T);
+      chprintf((BaseSequentialStream *)&SDU1,"ADC2_delta = %f\r\n", mean_ADC_I_SENSE_4T_AC);
+      command_ok = true;
+    }
+
 
 
     if (command_ok) {

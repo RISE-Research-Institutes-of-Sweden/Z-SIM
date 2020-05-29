@@ -33,6 +33,12 @@ extern float intmean_ADC_I_SENSE_4T_AC;
 extern float dmean_ADC_I_SENSE_AC_dt;
 extern float dmean_ADC_I_SENSE_4T_AC_dt;
 
+// For debugging
+extern float mean_ADC_I_SENSE;
+extern float mean_ADC_I_SENSE_4T;
+// End for debugging
+
+
 extern float Rload, Lload, Cload;
 extern uint16_t loadConfig;
 

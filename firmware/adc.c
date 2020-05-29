@@ -32,6 +32,11 @@ float intmean_ADC_I_SENSE_4T_AC = 0;
 float dmean_ADC_I_SENSE_AC_dt;
 float dmean_ADC_I_SENSE_4T_AC_dt;
 
+// For debugging
+float mean_ADC_I_SENSE;
+float mean_ADC_I_SENSE_4T;
+// End for debugging
+
 float Rload = 1, Lload =0 , Cload = 100;
 uint16_t loadConfig = RESISTIVE; //IDUCTIVE, CAPACITIVE
 
@@ -140,7 +145,7 @@ static void adccallback(ADCDriver *adcp) {
   unsigned int i,j;
   uint32_t sum_ADC_I_SENSE=0;
   uint32_t sum_ADC_I_SENSE_4T=0;
-  float mean_ADC_I_SENSE, mean_ADC_I_SENSE_4T;
+  //float mean_ADC_I_SENSE, mean_ADC_I_SENSE_4T;
 
   if (adcIsBufferComplete(adcp)) {
     j=buffer_size_ADC1/2;  // Upper part of buffer
