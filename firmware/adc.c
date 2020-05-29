@@ -359,13 +359,16 @@ void adc_init(void) {
   palSetPadMode(ADC_SHUNT_GPIO, I_SENSE_PIN, PAL_MODE_INPUT_ANALOG);
   palSetPadMode(ADC_SHUNT_GPIO, I_SENSE_4T_PIN, PAL_MODE_INPUT_ANALOG);
   palSetPadMode(ADC_DCDC_GPIO, RAIL_DIV_PIN, PAL_MODE_INPUT_ANALOG);
-  palSetPadMode(ADC_DCDC_GPIO, PWR_DIV_PIN, PAL_MODE_INPUT_ANALOG);
+  palSetPadMode(ADC_DCDC_GPIO, PWR_DIV_PIN, PAL_MODE_INPUT_ANALOG);R
 
   palSetPadMode(ADC_EXTRA_GPIO, ADC_EXTRA1_PIN, PAL_MODE_INPUT_ANALOG);
   palSetPadMode(ADC_EXTRA_GPIO, ADC_EXTRA2_PIN, PAL_MODE_INPUT_ANALOG);
 
-  chThdCreateStatic(waThdADC1, sizeof(waThdADC1), NORMALPRIO, ThdADC1, NULL);
 //  chThdCreateStatic(waThdADC2, sizeof(waThdADC2), NORMALPRIO, ThdADC2, NULL);
 //  chThdCreateStatic(waThdADC3, sizeof(waThdADC3), NORMALPRIO, ThdADC3, NULL);
 
+}
+
+void adc1_start(void){
+   chThdCreateStatic(waThdADC1, sizeof(waThdADC1), NORMALPRIO, ThdADC1, NULL);
 }

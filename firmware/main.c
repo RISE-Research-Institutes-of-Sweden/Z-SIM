@@ -119,13 +119,21 @@ int main(void) {
 
 
     if (strncmp(command_str,"Help",4)==0) {
+      chprintf((BaseSequentialStream *)&SDU1,"StartADC1: ADC1 started.\r\n");
       chprintf((BaseSequentialStream *)&SDU1,"DCDC enablet: EnableDCDC\r\n");
       chprintf((BaseSequentialStream *)&SDU1,"DCDC disable: DisableDCDC\r\n");
+      chprintf((BaseSequentialStream *)&SDU1,"vsel /1-15/): Sets resistance stage\r\n");
       chprintf((BaseSequentialStream *)&SDU1,"No value in following responds with stored value\r\n");
       chprintf((BaseSequentialStream *)&SDU1,"Rload /resistance in Ohm/\r\n");
       chprintf((BaseSequentialStream *)&SDU1,"Lload /inductance in Henry/\r\n");
       chprintf((BaseSequentialStream *)&SDU1,"Cload /capacitance in Farad/\r\n");
-      chprintf((BaseSequentialStream *)&SDU1,"Configuration (0=RESISTIVE (R), 1=INDUCTIVE (R+L), 2=CAPACITIVE (R//C))\r\n");
+//      chprintf((BaseSequentialStream *)&SDU1,"Configuration (0=RESISTIVE (R), 1=INDUCTIVE (R+L), 2=CAPACITIVE (R//C))\r\n");
+      command_ok = true;
+    }
+
+    if (strncmp(command_str,"StartADC1",9)==0) {
+      adc1_start();
+      chprintf((BaseSequentialStream *)&SDU1,"ADC1 started\r\n");
       command_ok = true;
     }
 
@@ -174,11 +182,11 @@ int main(void) {
       command_ok = true;
     }
 
-    if (strncmp(command_str,"ADC?",4)==0) {
-      chprintf((BaseSequentialStream *)&SDU1,"ADC1 = %f\r\n", mean_ADC_I_SENSE);
-      chprintf((BaseSequentialStream *)&SDU1,"ADC1_delta = %f\r\n", mean_ADC_I_SENSE_AC);
-      chprintf((BaseSequentialStream *)&SDU1,"ADC2 = %f\r\n", mean_ADC_I_SENSE_4T);
-      chprintf((BaseSequentialStream *)&SDU1,"ADC2_delta = %f\r\n", mean_ADC_I_SENSE_4T_AC);
+    if (strncmp(command_str,"ADC1?",5)==0) {
+      chprintf((BaseSequentialStream *)&SDU1,"ADC1a = %f\r\n", mean_ADC_I_SENSE);
+      chprintf((BaseSequentialStream *)&SDU1,"ADC1a_delta = %f\r\n", mean_ADC_I_SENSE_AC);
+      chprintf((BaseSequentialStream *)&SDU1,"ADC1b = %f\r\n", mean_ADC_I_SENSE_4T);
+      chprintf((BaseSequentialStream *)&SDU1,"ADC1b_delta = %f\r\n", mean_ADC_I_SENSE_4T_AC);
       command_ok = true;
     }
 

@@ -47,6 +47,7 @@ extern uint16_t loadConfig;
 #define CAPACITIVE  2
 
 extern void adc_init(void);
+extern void adc1_start(void);
 extern void dacOutput(float outputPeak2Peak);
 
 #endif
