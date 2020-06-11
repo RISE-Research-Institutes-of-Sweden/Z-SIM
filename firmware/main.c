@@ -116,11 +116,11 @@ int main(void) {
     n = inputline((BaseSequentialStream *)&SDU1, command_str,COMMAND_STR_SIZE);
     chprintf((BaseSequentialStream *)&SDU1,"\r\n", n);
 
-
-
     if (strncmp(command_str,"Help",4)==0) {
-      chprintf((BaseSequentialStream *)&SDU1,"StartADC1: ADC1 started.\r\n");
-      chprintf((BaseSequentialStream *)&SDU1,"DCDC enablet: EnableDCDC\r\n");
+      chprintf((BaseSequentialStream *)&SDU1,"Start ADC1: StartADC1\r\n");
+      chprintf((BaseSequentialStream *)&SDU1,"Manual read ADC1: ADC1?\r\n");
+      chprintf((BaseSequentialStream *)&SDU1,"Start ADC-DAC loop: EnableADC-DAC\r\n");
+      chprintf((BaseSequentialStream *)&SDU1,"DCDC enable: EnableDCDC\r\n");
       chprintf((BaseSequentialStream *)&SDU1,"DCDC disable: DisableDCDC\r\n");
       chprintf((BaseSequentialStream *)&SDU1,"vsel /1-15/): Sets resistance stage\r\n");
       chprintf((BaseSequentialStream *)&SDU1,"No value in following responds with stored value\r\n");
@@ -133,6 +133,12 @@ int main(void) {
 
     if (strncmp(command_str,"StartADC1",9)==0) {
       adc1_start();
+      chprintf((BaseSequentialStream *)&SDU1,"ADC1 started\r\n");
+      command_ok = true;
+    }
+
+    if (strncmp(command_str,"EnableADC-DAC",13)==0) {
+      EnableADC_DAC = TRUE;
       chprintf((BaseSequentialStream *)&SDU1,"ADC1 started\r\n");
       command_ok = true;
     }
@@ -190,8 +196,6 @@ int main(void) {
       command_ok = true;
     }
 
-
-
     if (command_ok) {
       chprintf((BaseSequentialStream *)&SDU1,"Ok\r\n");
     } else {
@@ -199,21 +203,5 @@ int main(void) {
     }
 
     chThdSleepMilliseconds(100);
-    /*
-        snprintf(buff, 64 , "ADC_I_SENSE_AC %1.2f", mean_ADC_I_SENSE_AC);
-        chprintf(
-        snprintf(buff, 64 , "ADC_I_SENSE_4T_AC %1.2f", mean_ADC_I_SENSE_4T_AC);
-        chprintf((BaseSequentialStream *)&SDU1,"%s, ",buff);
-        snprintf(buff, 64 , "prev_ADC_I_SENSE_AC %1.2f", prevmean_ADC_I_SENSE_AC);
-        chprintf((BaseSequentialStream *)&SDU1,"%s, ",buff);
-        snprintf(buff, 64 , "prev_ADC_I_SENSE_4T_AC %1.2f", prevmean_ADC_I_SENSE_4T_AC);
-        chprintf((BaseSequentialStream *)&SDU1,"%s, ",buff);
-        snprintf(buff, 64 , "dADC_I_SENSE_4T_AC_dt %1.2f", dmean_ADC_I_SENSE_4T_AC_dt);
-        chprintf((BaseSequentialStream *)&SDU1,"%s, ",buff);
-        snprintf(buff, 64 , "intADC_I_SENSE_4T_AC %1.2f", intmean_ADC_I_SENSE_4T_AC);
-        chprintf((BaseSequentialStream *)&SDU1,"%s \r\n",buff);
-
-
-      } */
   }
 }
