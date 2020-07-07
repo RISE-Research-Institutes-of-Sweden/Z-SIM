@@ -32,7 +32,7 @@ float intmean_ADC_I_SENSE_4T_AC = 0;
 float dmean_ADC_I_SENSE_AC_dt;
 float dmean_ADC_I_SENSE_4T_AC_dt;
 
-bool EnableADC_DAC = FALSE;
+extern bool EnableADC_DAC = FALSE;
 
 // For debugging
 float mean_ADC_I_SENSE;
@@ -356,24 +356,24 @@ static THD_WORKING_AREA(waThdADC3, 512);
 
 
 /*
- * Channels:                        Z-SIM                   DISCOVERY    
- * PA0_SHUNT1 = I_SENSE, TP_I1:     PA0: ADC123 IN0 
- * PA1_SHUNT2 = I_SENSE_4T, TP_I2:  PA1: ADC123 IN1 
- * PA2_DCDC_RAIL = RAIL_DIV:        PA2: ADC123 IN2 
- * PA3_DCDC_IN = PWR_DIV:           PA3: ADC123 IN3 
+ * Channels:                        Z-SIM                   DISCOVERY
+ * PA0_SHUNT1 = I_SENSE, TP_I1:     PA0: ADC123 IN0
+ * PA1_SHUNT2 = I_SENSE_4T, TP_I2:  PA1: ADC123 IN1
+ * PA2_DCDC_RAIL = RAIL_DIV:        PA2: ADC123 IN2
+ * PA3_DCDC_IN = PWR_DIV:           PA3: ADC123 IN3
  * PA4_DAC1:                        PA4:
  * PA5_DAC2:                        PA5:
  * PA6_ES1:                         PA6: ADC12 IN6
  * PA7_ES2:                         PA7: ADC12 IN7
  * PB0_LED_GREEN:                   PB0:
  * PB1_LED_RED:                     PB1:
- * PC0_TEMP1 = TEMP1_J2:            PC0: ADC123 IN10 
- * PC1_TEMP2 = TEMP1_J3:            PC1: ADC123 IN11 
- * ADC_EXTRA_PIN2:                  PC2: ADC123 IN12 
- * ADC_EXTRA_PIN3:                  PC3: ADC123 IN13 
+ * PC0_TEMP1 = TEMP1_J2:            PC0: ADC123 IN10
+ * PC1_TEMP2 = TEMP1_J3:            PC1: ADC123 IN11
+ * ADC_EXTRA_PIN2:                  PC2: ADC123 IN12
+ * ADC_EXTRA_PIN3:                  PC3: ADC123 IN13
  * NC:                              PC4: ADC12 IN14
  * NC:                              PC5: ADC12 IN15
- * SENSOR = Internal Temperature sensor:    ADC1   
+ * SENSOR = Internal Temperature sensor:    ADC1
  * VREFINT =Internal reference:             ADC1
  * VBAT:                                    ADC1
  */
@@ -394,7 +394,7 @@ void adc_init(void) {
   palSetPadMode(OP_ES_GPIO, OP_ES1_PIN, PAL_MODE_INPUT_ANALOG);
   //PA7: Analog
   palSetPadMode(OP_ES_GPIO, OP_ES2_PIN, PAL_MODE_INPUT_ANALOG);
-  
+
   //PC0: Analog
   palSetPadMode(ADC_TEMP_GPIO, TEMP1_PIN, PAL_MODE_INPUT_ANALOG);
   //PC1: Analog

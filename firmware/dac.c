@@ -44,6 +44,23 @@ void dacOutput(float outputOPPeak2Peak) {
 
 }
 
+void dac1Set(uint16_t dacOut) {
+  // Fundera på att ändra till 16-bit uint
+
+  dacPutChannelX(&DACD1, 0, dacOut);
+  palTogglePad(DAC_GPIO, DAC1_PIN);
+
+}
+
+void dac2Set(uint16_t dacOut) {
+  // Fundera på att ändra till 16-bit uint
+
+  dacPutChannelX(&DACD2, 0, dacOut);
+  palTogglePad(DAC_GPIO, DAC2_PIN);
+
+}
+
+
 static const DACConfig dac_config = {
   .init         = 1, //2047U
   .datamode     = DAC_DHRM_12BIT_RIGHT,

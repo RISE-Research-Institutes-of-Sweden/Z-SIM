@@ -25,11 +25,13 @@ Copyright 2020   Anders Thorsén thorsenanders@yahoo.com
 #include "config.h"
 
 extern float mean_ADC_I_SENSE;
-extern float mean_ADC_I_SENSE_4T;;
+extern float mean_ADC_I_SENSE_4T;
 
 
 extern void dac_init(void);
 extern void dacOutput(float outputPeak2Peak);
 
+extern void dac1Set(uint16_t dacOut);
+extern void dac2Set(uint16_t dacOut);
 
 #endif

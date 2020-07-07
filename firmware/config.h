@@ -19,8 +19,8 @@ Copyright 2019/2020   Joel Svensson	svenssonjoel@yahoo.se
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
-#define zSIM TRUE
-//#define STM32F4DISC TRUE
+//#define zSIM TRUE
+#define STM32F4DISC TRUE
 
 // Harware Configuration
 #define Rshunt 10.0e-3 //Ohm
@@ -33,24 +33,24 @@ Copyright 2019/2020   Joel Svensson	svenssonjoel@yahoo.se
 
 // HW Pin Configuration
 /*
- * Channels:                        Z-SIM                   DISCOVERY    
- * PA0_SHUNT1 = I_SENSE, TP_I1:     PA0: ADC123 IN0 
- * PA1_SHUNT2 = I_SENSE_4T, TP_I2:  PA1: ADC123 IN1 
- * PA2_DCDC_RAIL = RAIL_DIV:        PA2: ADC123 IN2 
- * PA3_DCDC_IN = PWR_DIV:           PA3: ADC123 IN3 
+ * Channels:                        Z-SIM                   DISCOVERY
+ * PA0_SHUNT1 = I_SENSE, TP_I1:     PA0: ADC123 IN0
+ * PA1_SHUNT2 = I_SENSE_4T, TP_I2:  PA1: ADC123 IN1
+ * PA2_DCDC_RAIL = RAIL_DIV:        PA2: ADC123 IN2
+ * PA3_DCDC_IN = PWR_DIV:           PA3: ADC123 IN3
  * PA4_DAC1:                        PA4:
  * PA5_DAC2:                        PA5:
  * PA6_ES1:                         PA6: ADC12 IN6
  * PA7_ES2:                         PA7: ADC12 IN7
  * PB0_LED_GREEN:                   PB0:
  * PB1_LED_RED:                     PB1:
- * PC0_TEMP1 = TEMP1_J2:            PC0: ADC123 IN10 
- * PC1_TEMP2 = TEMP1_J3:            PC1: ADC123 IN11 
- * ADC_EXTRA_PIN2:                  PC2: ADC123 IN12 
- * ADC_EXTRA_PIN3:                  PC3: ADC123 IN13 
+ * PC0_TEMP1 = TEMP1_J2:            PC0: ADC123 IN10
+ * PC1_TEMP2 = TEMP1_J3:            PC1: ADC123 IN11
+ * ADC_EXTRA_PIN2:                  PC2: ADC123 IN12
+ * ADC_EXTRA_PIN3:                  PC3: ADC123 IN13
  * NC:                              PC4: ADC12 IN14
  * NC:                              PC5: ADC12 IN15
- * SENSOR = Internal Temperature sensor:    ADC1   
+ * SENSOR = Internal Temperature sensor:    ADC1
  * VREFINT =Internal reference:             ADC1
  * VBAT:                                    ADC1
  */
