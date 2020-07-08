@@ -205,14 +205,21 @@ int main(void) {
     }
 
     if (strncmp(command_str,"vsel",4)==0 && strlen(command_str) > 5) {
-      sscanf(command_str,"vsel %s",&vsel_temp);
-      dcdc_vsel_set(vsel_temp);
+      sscanf(command_str,"vsel %d",&vsel_temp);
 
-      chprintf((BaseSequentialStream *)&SDU1,"Pin 1: %c, %c\r\n", vsel_temp, (vsel_temp & 1));
-      chprintf((BaseSequentialStream *)&SDU1,"Pin 2: %c, %c\r\n", vsel_temp, ((vsel_temp >> 1)));
-      chprintf((BaseSequentialStream *)&SDU1,"Pin 3: %c, %c\r\n", vsel_temp, ((vsel_temp >> 2) & 1));
-      chprintf((BaseSequentialStream *)&SDU1,"Pin 4: %c, %c\r\n", vsel_temp, ((vsel_temp >> 3) & 1));
-      chprintf((BaseSequentialStream *)&SDU1,"Pin 5: %c, %c\r\n", vsel_temp, ((vsel_temp >> 4) & 1));
+      if ((vsel_temp >=1) && (vsel_temp <=31)) {
+        dcdc_vsel_set(vsel_temp);
+
+        chprintf((BaseSequentialStream *)&SDU1,"Pin 1: %d, %d\r\n", vsel_temp, (vsel_temp & 1));
+        chprintf((BaseSequentialStream *)&SDU1,"Pin 2: %d, %d\r\n", vsel_temp, ((vsel_temp >> 1) & 1));
+        chprintf((BaseSequentialStream *)&SDU1,"Pin 3: %d, %d\r\n", vsel_temp, ((vsel_temp >> 2) & 1));
+        chprintf((BaseSequentialStream *)&SDU1,"Pin 4: %d, %d\r\n", vsel_temp, ((vsel_temp >> 3) & 1));
+        chprintf((BaseSequentialStream *)&SDU1,"Pin 5: %d, %d\r\n", vsel_temp, ((vsel_temp >> 4) & 1));
+      }
+     else
+     {
+       chprintf((BaseSequentialStream *)&SDU1,"vsel out of range!\r\n");
+     }
 
       command_ok = true;
     }
