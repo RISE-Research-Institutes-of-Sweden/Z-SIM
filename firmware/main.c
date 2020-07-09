@@ -120,11 +120,15 @@ int main(void) {
 
     if (strncmp(command_str,"Help",4)==0) {
       chprintf((BaseSequentialStream *)&SDU1,"Start ADC1: StartADC1\r\n");
+      chprintf((BaseSequentialStream *)&SDU1,"Start ADC3: StartADC3\r\n");
       chprintf((BaseSequentialStream *)&SDU1,"Manual read ADC1: ADC1?\r\n");
+      chprintf((BaseSequentialStream *)&SDU1,"Manual read ADC3: ADC3?\r\n");
       chprintf((BaseSequentialStream *)&SDU1,"Manual set DAC1: DAC1 /DAC value/\r\n");
       chprintf((BaseSequentialStream *)&SDU1,"Manual set DAC2: DAC2 /DAC value/\r\n");
-      chprintf((BaseSequentialStream *)&SDU1,"Start ADC-DAC loop: EnableADC-DAC\r\n");
-      chprintf((BaseSequentialStream *)&SDU1,"Stopp ADC-DAC loop: DisableADC-DAC\r\n");
+      chprintf((BaseSequentialStream *)&SDU1,"Start ADC1-DAC loop: EnableADC1-DAC\r\n");
+      chprintf((BaseSequentialStream *)&SDU1,"Stopp ADC1-DAC loop: DisableADC1-DAC\r\n");
+      chprintf((BaseSequentialStream *)&SDU1,"Start ADC3-DAC loop: EnableADC3-DAC\r\n");
+      chprintf((BaseSequentialStream *)&SDU1,"Stopp ADC3-DAC loop: DisableADC3-DAC\r\n");
       chprintf((BaseSequentialStream *)&SDU1,"DCDC enable: EnableDCDC\r\n");
       chprintf((BaseSequentialStream *)&SDU1,"DCDC disable: DisableDCDC\r\n");
       chprintf((BaseSequentialStream *)&SDU1,"vsel /1-15/): Sets resistance stage\r\n");
@@ -139,6 +143,12 @@ int main(void) {
     if (strncmp(command_str,"StartADC1",9)==0) {
       adc1_start();
       chprintf((BaseSequentialStream *)&SDU1,"ADC1 started\r\n");
+      command_ok = true;
+    }
+
+    if (strncmp(command_str,"StartADC3",9)==0) {
+      adc3_start();
+      chprintf((BaseSequentialStream *)&SDU1,"ADC3 started\r\n");
       command_ok = true;
     }
 
@@ -159,15 +169,29 @@ int main(void) {
     }
 
 
-    if (strncmp(command_str,"EnableADC-DAC",13)==0) {
-      EnableADC_DAC = TRUE;
-      chprintf((BaseSequentialStream *)&SDU1,"Started ADC-DAC loop!\r\n");
+    if (strncmp(command_str,"EnableADC1-DAC",14)==0) {
+      EnableADC3_DAC = FALSE;
+      EnableADC1_DAC = TRUE;
+      chprintf((BaseSequentialStream *)&SDU1,"Started ADC1-DAC loop!\r\n");
       command_ok = true;
     }
 
-    if (strncmp(command_str,"DisableADC-DAC",13)==0) {
-      EnableADC_DAC = FALSE;
-      chprintf((BaseSequentialStream *)&SDU1,"Stopped ADC-DAC loop!\r\n");
+    if (strncmp(command_str,"DisableADC1-DAC",15)==0) {
+      EnableADC1_DAC = FALSE;
+      chprintf((BaseSequentialStream *)&SDU1,"Stopped ADC1-DAC loop!\r\n");
+      command_ok = true;
+    }
+
+    if (strncmp(command_str,"EnableADC3-DAC",14)==0) {
+      EnableADC1_DAC = FALSE;
+      EnableADC3_DAC = TRUE;
+      chprintf((BaseSequentialStream *)&SDU1,"Started ADC3-DAC loop!\r\n");
+      command_ok = true;
+    }
+
+    if (strncmp(command_str,"DisableADC3-DAC",15)==0) {
+      EnableADC3_DAC = FALSE;
+      chprintf((BaseSequentialStream *)&SDU1,"Stopped ADC3-DAC loop!\r\n");
       command_ok = true;
     }
 
@@ -229,6 +253,14 @@ int main(void) {
       chprintf((BaseSequentialStream *)&SDU1,"ADC1a_delta = %f\r\n", mean_ADC_I_SENSE_AC);
       chprintf((BaseSequentialStream *)&SDU1,"ADC1b = %f\r\n", mean_ADC_I_SENSE_4T);
       chprintf((BaseSequentialStream *)&SDU1,"ADC1b_delta = %f\r\n", mean_ADC_I_SENSE_4T_AC);
+      command_ok = true;
+    }
+
+    if (strncmp(command_str,"ADC3?",5)==0) {
+      chprintf((BaseSequentialStream *)&SDU1,"ADC3a = %f\r\n", mean_ADC_EXTRA_1);
+      chprintf((BaseSequentialStream *)&SDU1,"ADC3a_delta = %f\r\n", mean_ADC_EXTRA_1_AC);
+      chprintf((BaseSequentialStream *)&SDU1,"ADC3b = %f\r\n", mean_ADC_EXTRA_2);
+      chprintf((BaseSequentialStream *)&SDU1,"ADC3b_delta = %f\r\n", mean_ADC_EXTRA_2_AC);
       command_ok = true;
     }
 

@@ -33,11 +33,24 @@ extern float intmean_ADC_I_SENSE_4T_AC;
 extern float dmean_ADC_I_SENSE_AC_dt;
 extern float dmean_ADC_I_SENSE_4T_AC_dt;
 
-extern bool EnableADC_DAC;
+extern float mean_ADC_EXTRA_1_AC;
+extern float mean_ADC_EXTRA_2_AC;
+extern float prevmean_ADC_EXTRA_1_AC;
+extern float prevmean_ADC_EXTRA_2_AC;
+extern float intmean_ADC_EXTRA_1_AC;
+extern float intmean_ADC_EXTRA_2_AC;
+extern float dmean_ADC_EXTRA_1_dt;
+extern float dmean_ADC_EXTRA_2_AC_dt;
+
+
+extern bool EnableADC1_DAC;
+extern bool EnableADC3_DAC;
 
 // For debugging
 extern float mean_ADC_I_SENSE;
 extern float mean_ADC_I_SENSE_4T;
+extern float mean_ADC_EXTRA_1;
+extern float mean_ADC_EXTRA_2;
 // End for debugging
 
 

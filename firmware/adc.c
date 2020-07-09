@@ -24,7 +24,6 @@ bool flag_ADC3 = FALSE;
 float mean_ADC_I_SENSE_AC;
 float mean_ADC_I_SENSE_4T_AC;
 int32_t lastvalue_ADC2;
-int32_t lastvalue_ADC3;
 float prevmean_ADC_I_SENSE_AC;
 float prevmean_ADC_I_SENSE_4T_AC;
 float intmean_ADC_I_SENSE_AC = 0;
@@ -32,11 +31,25 @@ float intmean_ADC_I_SENSE_4T_AC = 0;
 float dmean_ADC_I_SENSE_AC_dt;
 float dmean_ADC_I_SENSE_4T_AC_dt;
 
-extern bool EnableADC_DAC = FALSE;
+//ADC3
+float mean_ADC_EXTRA_1_AC;
+float mean_ADC_EXTRA_2_AC;
+float prevmean_ADC_EXTRA_1_AC;
+float prevmean_ADC_EXTRA_2_AC;
+float intmean_ADC_EXTRA_1_AC = 0;
+float intmean_ADC_EXTRA_2_AC = 0;
+float dmean_ADC_EXTRA_1_AC_dt;
+float dmean_ADC_EXTRA_2_AC_dt;
+
+
+extern bool EnableADC1_DAC = FALSE;
+extern bool EnableADC3_DAC = FALSE;
 
 // For debugging
 float mean_ADC_I_SENSE;
 float mean_ADC_I_SENSE_4T;
+float mean_ADC_EXTRA_1;
+float mean_ADC_EXTRA_2;
 // End for debugging
 
 float Rload = 1, Lload =0 , Cload = 100;
@@ -69,7 +82,7 @@ static const GPTConfig gpt3cfg1 = {
 #define MY_NUM_CH_ADC3  2
 #define MY_SAMPLING_NUMBER_ADC1  4  //Min 2 in contnous mode?
 #define MY_SAMPLING_NUMBER_ADC2  1
-#define MY_SAMPLING_NUMBER_ADC3  1
+#define MY_SAMPLING_NUMBER_ADC3  4
 
 int32_t buffer_size_ADC1 = MY_NUM_CH_ADC1 * MY_SAMPLING_NUMBER_ADC1;
 int32_t buffer_size_ADC2 = MY_NUM_CH_ADC2 * MY_SAMPLING_NUMBER_ADC2;
@@ -142,7 +155,7 @@ uint16_t loadConfig;
   */
 
 
-static void adccallback(ADCDriver *adcp) {
+static void adccallback1(ADCDriver *adcp) {
 
   unsigned int i,j;
   uint32_t sum_ADC_I_SENSE=0;
@@ -175,8 +188,48 @@ static void adccallback(ADCDriver *adcp) {
   intmean_ADC_I_SENSE_AC += (mean_ADC_I_SENSE_AC+prevmean_ADC_I_SENSE_AC)/2 * (1/ADC1Freq);
   intmean_ADC_I_SENSE_4T_AC += (mean_ADC_I_SENSE_4T_AC+prevmean_ADC_I_SENSE_4T_AC)/2 * (1/ADC1Freq);
 
-  if (EnableADC_DAC) {
+  if (EnableADC1_DAC) {
     dacOutput(uOPp2p(mean_ADC_I_SENSE_4T_AC, dmean_ADC_I_SENSE_4T_AC_dt, intmean_ADC_I_SENSE_4T_AC));
+  }
+
+}
+
+
+static void adccallback3(ADCDriver *adcp) {
+
+  unsigned int i,j;
+  uint32_t sum_ADC_EXTRA_1=0;
+  uint32_t sum_ADC_EXTRA_2=0;
+  //float mean_ADC_I_SENSE, mean_ADC_I_SENSE_4T;
+
+  if (adcIsBufferComplete(adcp)) {
+    j=buffer_size_ADC1/2;  // Upper part of buffer
+  }
+  else {
+    j=0;  //Lower part of buffer
+  }
+
+  for (i=0; i< MY_SAMPLING_NUMBER_ADC3/2;i++){
+    sum_ADC_EXTRA_1 += sample_buff_ADC3[j+i*MY_NUM_CH_ADC3+1];
+    sum_ADC_EXTRA_2 += sample_buff_ADC3[j+i*MY_NUM_CH_ADC3+0];
+  }
+
+  mean_ADC_EXTRA_1 = ((float) sum_ADC_EXTRA_1) / ((float) MY_SAMPLING_NUMBER_ADC3/2);
+  mean_ADC_EXTRA_2 = ((float) sum_ADC_EXTRA_2) / ((float) MY_SAMPLING_NUMBER_ADC3/2);
+
+  prevmean_ADC_EXTRA_1_AC = mean_ADC_EXTRA_1_AC;
+  prevmean_ADC_EXTRA_2_AC = mean_ADC_EXTRA_2_AC;
+  mean_ADC_EXTRA_1_AC = mean_ADC_EXTRA_1 - (float) ADCmax/2;
+  mean_ADC_EXTRA_2_AC = mean_ADC_EXTRA_2 - (float) ADCmax/2;
+
+  dmean_ADC_EXTRA_1_AC_dt = (mean_ADC_EXTRA_1_AC-prevmean_ADC_EXTRA_1_AC)*ADC1Freq;
+  dmean_ADC_EXTRA_2_AC_dt = (mean_ADC_EXTRA_2_AC-prevmean_ADC_EXTRA_2_AC)*ADC1Freq;
+
+  intmean_ADC_EXTRA_1_AC += (mean_ADC_EXTRA_1_AC+prevmean_ADC_EXTRA_1_AC)/2 * (1/ADC1Freq);
+  intmean_ADC_EXTRA_2_AC += (mean_ADC_EXTRA_2_AC+prevmean_ADC_EXTRA_2_AC)/2 * (1/ADC1Freq);
+
+  if (EnableADC3_DAC) {
+    dacOutput(uOPp2p(mean_ADC_EXTRA_1_AC, dmean_ADC_EXTRA_1_AC_dt, intmean_ADC_EXTRA_1_AC));
   }
 
 }
@@ -218,7 +271,7 @@ static void adcerrorcallback(ADCDriver *adcp, adcerror_t err) {
 static const ADCConversionGroup ADC1_conversion_group = {
   TRUE,                            /*NOT CIRCULAR*/
   MY_NUM_CH_ADC1,                  /*NUMB OF CH*/
-  adccallback,                     /* ADC CALLBACK*/
+  adccallback1,                     /* ADC CALLBACK*/
   adcerrorcallback,                 /*ADC ERROR CALLBACK*/
   0,                                /* CR1 */
   ADC_CR2_EXTEN_0 | ADC_CR2_EXTSEL_3,  /* CR2 */
@@ -252,12 +305,12 @@ static const ADCConversionGroup ADC2_conversion_group = {
 };
 
 static const ADCConversionGroup ADC3_conversion_group = {
-  FALSE,                            /*NOT CIRCULAR*/
+  TRUE,                            /*NOT CIRCULAR*/
   MY_NUM_CH_ADC3,                        /*NUMB OF CH*/
-  NULL,                             /*NO ADC CALLBACK*/
-  NULL,                             /*NO ADC ERROR CALLBACK*/
+  adccallback3,                             /*NO ADC CALLBACK*/
+  adcerrorcallback,                             /*NO ADC ERROR CALLBACK*/
   0,                                /* CR1 */
-  ADC_CR2_SWSTART,                  /* CR2 */
+  ADC_CR2_EXTEN_0 | ADC_CR2_EXTSEL_3,                  /* CR2 */
   ADC_SMPR1_SMP_AN12(ADC_SAMPLE_3) |
   ADC_SMPR1_SMP_AN13(ADC_SAMPLE_3),  /* SMPR1 */
   0,                                /* SMPR2 */
@@ -329,29 +382,21 @@ static THD_WORKING_AREA(waThdADC2, 512);
 /*===========================================================================*/
 static THD_WORKING_AREA(waThdADC3, 512);
   static THD_FUNCTION(ThdADC3, arg) {
-  unsigned ii;
-  float mean;
   (void) arg;
   chRegSetThreadName("ADC3 handler");
+
+  // Starting GPT3 driver used for triggig the ADC1
+  gptStart(&GPTD3, &gpt3cfg1);
+
   /*
-    * Activates the ADC3 driver.
+    * Activates the ADC1 driver.
     */
   adcStart(&ADCD3, NULL);
-  while(TRUE) {
-    adcConvert(&ADCD3, &ADC3_conversion_group, sample_buff_ADC3, MY_SAMPLING_NUMBER_ADC3);
 
-    /* Making mean of sampled values. Note that samples refers to OTA and OTB
-        but since they we are looking for Rcm (common mode) we can make a simple
-        mean */
-    mean = 0;
-    for (ii = 0; ii < MY_NUM_CH_ADC3 * MY_SAMPLING_NUMBER_ADC3; ii++) {
-      mean += sample_buff_ADC3[ii];
-    }
-    mean /= MY_NUM_CH_ADC3 * MY_SAMPLING_NUMBER_ADC3;
-//    lastvalue_ADC3 = (float)mean;
-    lastvalue_ADC3 = (int32_t)sample_buff_ADC3[0];
-    flag_ADC3 = TRUE;
-  }
+//  Strats an ADC contnous conversion trigged with a period of 1/10000 second
+  adcStartConversion(&ADCD3, &ADC3_conversion_group, sample_buff_ADC3, MY_SAMPLING_NUMBER_ADC3);
+  gptStartContinuous(&GPTD3, ADC1_periods);
+
 }
 
 
@@ -412,4 +457,8 @@ void adc_init(void) {
 
 void adc1_start(void){
    chThdCreateStatic(waThdADC1, sizeof(waThdADC1), NORMALPRIO, ThdADC1, NULL);
+}
+
+void adc3_start(void){
+   chThdCreateStatic(waThdADC3, sizeof(waThdADC3), NORMALPRIO, ThdADC3, NULL);
 }
