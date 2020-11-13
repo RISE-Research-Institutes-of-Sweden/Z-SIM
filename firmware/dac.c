@@ -19,7 +19,7 @@
 #include "dac.h"
 #include <math.h>
 
-float GainuOP2dac = ((float) DACmax)/((float) GainOP* ((float) UDACmax));
+float GainuOP2dac = 0.5*((float) DACmax)/((float) GainOP* ((float) UDACmax));
 
 int16_t outputDACAmpCalc(float outputOPPeak2Peak) {
   return (int16_t) GainuOP2dac*outputOPPeak2Peak;
