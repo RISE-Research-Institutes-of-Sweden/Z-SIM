@@ -1,0 +1,49 @@
+dacOut1value = DACmax/2+outputDACAmp;
+dacOut2value = DACmax/2-outputDACAmp;
+
+outputDACAmp = outputDACAmpCalc(outputOPPeak2Peak) = GainuOP2dac*outputOPPeak2Peak;
+
+GainuOP2dac = 0.5*((float) DACmax)/((float) GainOP* ((float) UDACmax));
+
+outputOPPeak2Peak = uOPp2p(mean_ADC_I_SENSE_4T_AC, dmean_ADC_I_SENSE_4T_AC_dt, intmean_ADC_I_SENSE_4T_AC);
+ 
+uOPp2p(float ADCvalue_AC, float dADCvalue_AC_dt, float intADCvalue_AC) =
+	= uIn(iRshunt, diRshuntdt, int_iRshunt) - uRshunt = Rload*iIn+ Lload*diIndt+1/Cload*intIn - uRshunt
+
+iRshunt = uRshunt/Rshunt;
+uRshunt = UADCmax/GainCurrentShunt*(ADCvalue_AC/ADCmax);
+
+diRshuntdt = duRshuntdt/Rshunt;
+duRshuntdt = UADCmax/GainCurrentShunt*(dADCvalue_AC_dt/ADCmax);
+
+int_iRshunt = int_uRshunt/Rshunt;
+int_uRshunt = UADCmax/GainCurrentShunt*(intADCvalue_AC/ADCmax);
+
+uIn = Rload*iIn+ Lload*diIndt+1/Cload*intIn = Rload*iRshunt + Lload*diRshuntdt + 1/Cload*int_iRshunt =
+
+	= Rload*uRshunt/Rshunt + Lload*duRshuntdt/Rshunt + 1/Cload*int_uRshunt/Rshunt =
+	
+	= Rload/Rshunt*UADCmax/GainCurrentShunt*(ADCvalue_AC/ADCmax) +
+	+ Lload/Rshunt*UADCmax/GainCurrentShunt*(dADCvalue_AC_dt/ADCmax) +
+	+ 1/(Rshunt*Cload)*UADCmax/GainCurrentShunt*(intADCvalue_AC/ADCmax) =
+	
+	= 1/GainCurrentShunt * Rload/Rshunt * UADCmax/ADCmax*ADCvalue_AC +
+	+ 1/GainCurrentShunt * Lload/Rshunt * UADCmax/ADCmax * dADCvalue_AC_dt) +
+	+ 1/GainCurrentShunt * 1/(Rshunt*Cload) *UADCmax/ADCmax * intADCvalue_AC 
+	
+outputOPPeak2Peak = uOPp2p = uIn(iRshunt, diRshuntdt, int_iRshunt) - uRshunt =
+	= 1/GainCurrentShunt * Rload/Rshunt * UADCmax/ADCmax*ADCvalue_AC +
+	+ 1/GainCurrentShunt * Lload/Rshunt * UADCmax/ADCmax * dADCvalue_AC_dt) +
+	+ 1/GainCurrentShunt * 1/(Rshunt*Cload) *UADCmax/ADCmax * intADCvalue_AC +
+	- 1/GainCurrentShunt * UADCmax/ADCmax *ADCvalue_AC =
+	
+	= 1/GainCurrentShunt * (Rload/Rshunt - 1) * UADCmax/ADCmax*ADCvalue_AC +
+	+ 1/GainCurrentShunt * Lload/Rshunt * UADCmax/ADCmax * dADCvalue_AC_dt +
+	+ 1/GainCurrentShunt * 1/(Rshunt*Cload) *UADCmax/ADCmax * intADCvalue_AC
+	
+outputDACAmp = GainuOP2dac*outputOPPeak2Peak =
+	
+	= DACmax/UDACmax * 1/2 * 1/GainOP * 1/GainCurrentShunt * 
+	* [(Rload/Rshunt - 1) * UADCmax/ADCmax*ADCvalue_AC +
+	+ Lload/Rshunt * UADCmax/ADCmax * dADCvalue_AC_dt +
+	+ 1/(Rshunt*Cload) *UADCmax/ADCmax * intADCvalue_AC]

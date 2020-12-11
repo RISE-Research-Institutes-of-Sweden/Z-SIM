@@ -22,6 +22,8 @@ Copyright 2019/2020   Joel Svensson	svenssonjoel@yahoo.se
 #define zSIM TRUE
 //#define STM32F4DISC TRUE
 
+#define FourTused TRUE
+
 // Harware Configuration
 #define Rshunt 10.0e-3 //Ohm
 #define UADCmax 3.3 //Volt
