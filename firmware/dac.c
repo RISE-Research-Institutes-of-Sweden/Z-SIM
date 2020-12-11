@@ -34,8 +34,8 @@ void dacOutput(float outputOPPeak2Peak) {
   outputDACAmp = outputDACAmpCalc(outputOPPeak2Peak);
 
 // Kolla max och min värde
-  dacOut1value = DACmax/2+outputDACAmp;
-  dacOut2value = DACmax/2-outputDACAmp;
+  dacOut1value = DACmax/2-outputDACAmp;
+  dacOut2value = DACmax/2+outputDACAmp;
 
   dacPutChannelX(&DACD1, 0, dacOut1value);
   dacPutChannelX(&DACD2, 0, dacOut2value);

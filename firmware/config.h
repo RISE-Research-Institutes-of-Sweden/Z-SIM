@@ -113,6 +113,6 @@ Copyright 2019/2020   Joel Svensson	svenssonjoel@yahoo.se
 // ADC configs
 
 #define gpt3Freq    1000000U
-#define ADC1_periods 101
+#define ADC1_periods 10
 
 #endif

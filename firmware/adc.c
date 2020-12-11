@@ -51,8 +51,8 @@ float mean_ADC_I_SENSE_4T;
 float mean_ADC_EXTRA_1;
 float mean_ADC_EXTRA_2;
 // End for debugging
-float Rload = .1, Lload =0 , Cload = 100;
-uint16_t loadConfig = RESISTIVE; //IDUCTIVE, CAPACITIVE
+float Rload = .2, Lload =1e-5 , Cload = 2e-7;
+uint16_t loadConfig = CAPACITIVE; //RESISTIVE, INDUCTIVE, CAPACITIVE
 
 
 /*===========================================================================*/
@@ -117,7 +117,7 @@ float uIn(float iIn, float diIndt, float intIn) {
     case RESISTIVE:
       return Rload*iIn;
     case INDUCTIVE:
-      return Rload*iIn+ Lload*diIndt;
+      return Rload*iIn + Lload*diIndt;
     case CAPACITIVE:
       return Rload*iIn+ Lload*diIndt+1/Cload*intIn;
   }

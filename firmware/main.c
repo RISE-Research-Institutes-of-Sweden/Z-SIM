@@ -219,12 +219,16 @@ int main(void) {
     if (strncmp(command_str,"Lload",5)==0) {
       sscanf(command_str,"Lload %f",&Lload_temp);
       Lload = Lload_temp;
+      chsnprintf(buff, 64 , "Lload %f", Lload);
+      chprintf((BaseSequentialStream *)&SDU1,"%s\r\n", buff);
       command_ok = true;
     }
 
     if (strncmp(command_str,"Cload",5)==0) {
       sscanf(command_str,"Cload %f",&Cload_temp);
       Cload = Cload_temp;
+      chsnprintf(buff, 64 , "Cload %f", Cload);
+      chprintf((BaseSequentialStream *)&SDU1,"%s\r\n", buff);
       command_ok = true;
     }
 
