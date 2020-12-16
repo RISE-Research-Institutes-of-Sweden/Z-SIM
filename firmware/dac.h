@@ -24,12 +24,9 @@ Copyright 2020   Anders Thorsén thorsenanders@yahoo.com
 #include "hal_pal.h"
 #include "config.h"
 
-extern float mean_ADC_I_SENSE;
-extern float mean_ADC_I_SENSE_4T;
-
-
 extern void dac_init(void);
 extern void dacOutput(float outputPeak2Peak);
+extern int16_t outputDACAmpCalc(float ADCvalue_AC, float dADCvalue_AC_dt, float intADCvalue_AC)
 
 extern void dac1Set(uint16_t dacOut);
 extern void dac2Set(uint16_t dacOut);

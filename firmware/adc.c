@@ -58,6 +58,7 @@ float mean_ADC_I_SENSE_4T;
 float mean_ADC_EXTRA_1;
 float mean_ADC_EXTRA_2;
 // End for debugging
+
 float Rload = .2, Lload =1e-5 , Cload = 2e-7;
 uint16_t loadConfig = CAPACITIVE; //RESISTIVE, INDUCTIVE, CAPACITIVE
 

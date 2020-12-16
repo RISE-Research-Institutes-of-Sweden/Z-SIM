@@ -20,18 +20,18 @@
 #include "impedanceModel.h"
 #include <math.h>
 
-float GainuAdc2Dac = ((float) DACmax)/((float) UDACmax) * ((float) UADCmax)/((float) ADCmax) * 0.5 * 1.0/((float) GainOP) * 1.0/((float) GainCurrentShunt);
+float GainAdc2Dac = ((float) DACmax)/((float) UDACmax) * ((float) UADCmax)/((float) ADCmax) * 0.5 * 1.0/((float) GainOP) * 1.0/((float) GainCurrentShunt);
 
 int16_t outputDACAmpCalc(float ADCvalue_AC, float dADCvalue_AC_dt, float intADCvalue_AC) {
     float outputDACAmp_res,  outputDACAmp_ind, outputDACAmp_cap, outputDACAmp;
 
-    outputDACAmp_res = GainuAdc2Dac * (((float) Rload)/((float) Rshunt) - 1) * ADCvalue_AC);
-    outputDACAmp_ind = GainuAdc2Dac * ((float) ADC1Freq) * ((float) Lload) / ((float) Rshunt) * ((float) dADCvalue_AC_dt);
-    outputDACAmp_cap = GainuAdc2Dac * ( 1/(ADC1Freq*Rshunt*Cload) * intADCvalue_AC);
+    outputDACAmp_res = GainAdc2Dac * (((float) Rload)/((float) Rshunt) - 1) * ADCvalue_AC;
+    outputDACAmp_ind = ((float) ADC1Freq) * GainAdc2Dac * ((float) Lload) / ((float) Rshunt) * dADCvalue_AC_dt; // Muliplication with ADC1Freq for correct time scale
+    outputDACAmp_cap = 1/((float) ADC1Freq) * GainAdc2Dac * ( 1/(ADC1Freq*((float) Rshunt) * ((float) Cload)) * intADCvalue_AC); //
 
+    outputDACAmp = outputDACAmp_res + outputDACAmp_ind + outputDACAmp_cap;
 
-
-  return (int16_t) GainuOP2dac*outputOPPeak2Peak;
+  return (int16_t) outputDACAmp;
 }
 
 
