@@ -114,5 +114,9 @@ Copyright 2019/2020   Joel Svensson	svenssonjoel@yahoo.se
 
 #define gpt3Freq    1000000U
 #define ADC1_periods 10
+#define ADC3_periods ADC1_periods
+
+#define ADC1Freq ((float) gpt3Freq) /((float) ADC1_periods);
+#define ADC3Freq ((float) gpt3Freq) /((float) ADC3_periods);
 
 #endif

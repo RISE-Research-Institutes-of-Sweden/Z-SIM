@@ -19,13 +19,19 @@
 #include "dac.h"
 #include <math.h>
 
-void dacOutput(float ADCvalue_AC, float dADCvalue_AC_dt, float intADCvalue_AC) {
+float GainuOP2dac = 0.5*((float) DACmax)/((float) GainOP* ((float) UDACmax));
+
+int16_t outputDACAmpCalc(float outputOPPeak2Peak) {
+  return (int16_t) GainuOP2dac*outputOPPeak2Peak;
+}
+
+void dacOutput(float outputOPPeak2Peak) {
   // Fundera på att ändra till 16-bit uint
 
   uint16_t dacOut1value, dacOut2value;
   uint16_t outputDACAmp;
 
-  outputDACAmp = outputDACAmpCalc(ADCvalue_AC, dADCvalue_AC_dt, intADCvalue_AC);
+  outputDACAmp = outputDACAmpCalc(outputOPPeak2Peak);
 
 // Kolla max och min värde
   dacOut1value = DACmax/2-outputDACAmp;

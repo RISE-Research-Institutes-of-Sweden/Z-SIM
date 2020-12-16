@@ -20,32 +20,25 @@
 #include "adc.h"
 
 bool flag_ADC2 = FALSE;
-
-//I_SENSE
+bool flag_ADC3 = FALSE;
 float mean_ADC_I_SENSE_AC;
-float prevmean_ADC_I_SENSE_AC;
-float intmean_ADC_I_SENSE_AC = 0;
-float dmean_ADC_I_SENSE_AC_dt;
-
-#ifdef FourTused
 float mean_ADC_I_SENSE_4T_AC;
-float prevmean_ADC_I_SENSE_4T_AC;
-float intmean_ADC_I_SENSE_4T_AC = 0;
-float dmean_ADC_I_SENSE_4T_AC_dt;
-#endif
-
 int32_t lastvalue_ADC2;
+float prevmean_ADC_I_SENSE_AC;
+float prevmean_ADC_I_SENSE_4T_AC;
+float intmean_ADC_I_SENSE_AC = 0;
+float intmean_ADC_I_SENSE_4T_AC = 0;
+float dmean_ADC_I_SENSE_AC_dt;
+float dmean_ADC_I_SENSE_4T_AC_dt;
 
-//ADC Extern 1
+//ADC3
 float mean_ADC_EXTRA_1_AC;
-float prevmean_ADC_EXTRA_1_AC;
-float intmean_ADC_EXTRA_1_AC = 0;
-float dmean_ADC_EXTRA_1_AC_dt;
-
-//ADC Extern 2
 float mean_ADC_EXTRA_2_AC;
+float prevmean_ADC_EXTRA_1_AC;
 float prevmean_ADC_EXTRA_2_AC;
+float intmean_ADC_EXTRA_1_AC = 0;
 float intmean_ADC_EXTRA_2_AC = 0;
+float dmean_ADC_EXTRA_1_AC_dt;
 float dmean_ADC_EXTRA_2_AC_dt;
 
 
@@ -98,6 +91,53 @@ static adcsample_t sample_buff_ADC1[MY_NUM_CH_ADC1 * MY_SAMPLING_NUMBER_ADC1];
 static adcsample_t sample_buff_ADC2[MY_NUM_CH_ADC2 * MY_SAMPLING_NUMBER_ADC2];
 static adcsample_t sample_buff_ADC3[MY_NUM_CH_ADC3 * MY_SAMPLING_NUMBER_ADC3];
 
+float ADC1Freq = ((float) gpt3Freq) /((float) ADC1_periods);
+
+
+
+float R_voltage(float current, float resistance) {
+
+   return 1000*current*(resistance-Rshunt);
+}
+
+float C_voltage(float current, float Ii_t_ack, float capacitance) {
+
+    return 1/capacitance*Ii_t_ack-current*Rshunt;
+}
+
+
+float L_voltage(float current, float prevCurrent, float inductance, float resistance, float dt) {
+
+    return current*(resistance-Rshunt) + inductance*(current-prevCurrent/dt);
+}
+
+float uIn(float iIn, float diIndt, float intIn) {
+
+  switch (loadConfig) {
+    case RESISTIVE:
+      return Rload*iIn;
+    case INDUCTIVE:
+      return Rload*iIn + Lload*diIndt;
+    case CAPACITIVE:
+      return Rload*iIn+ Lload*diIndt+1/Cload*intIn;
+  }
+  return 0;
+}
+
+
+
+float uOPp2p(float ADCvalue_AC, float dADCvalue_AC_dt, float intADCvalue_AC) {
+  float uRshunt, duRshuntdt, int_uRshunt, iRshunt, diRshuntdt, int_iRshunt;
+  uRshunt = UADCmax/GainCurrentShunt*(ADCvalue_AC/ADCmax);
+  iRshunt = uRshunt/Rshunt;
+  duRshuntdt = UADCmax/GainCurrentShunt*(dADCvalue_AC_dt/ADCmax);
+  diRshuntdt = duRshuntdt/Rshunt;
+  int_uRshunt = UADCmax/GainCurrentShunt*(intADCvalue_AC/ADCmax);
+  int_iRshunt = int_uRshunt/Rshunt;
+
+  return (uIn(iRshunt, diRshuntdt, int_iRshunt)-uRshunt);
+}
+
 uint16_t loadConfig;
 /*
 * ADC streaming callback
@@ -142,20 +182,21 @@ static void adccallback1(ADCDriver *adcp) {
   mean_ADC_I_SENSE = ((float) sum_ADC_I_SENSE) / ((float) MY_SAMPLING_NUMBER_ADC1/2);
   prevmean_ADC_I_SENSE_AC = mean_ADC_I_SENSE_AC;
   mean_ADC_I_SENSE_AC = mean_ADC_I_SENSE - (float) ADCmax/2;
-  dmean_ADC_I_SENSE_AC_dt = (mean_ADC_I_SENSE_AC-prevmean_ADC_I_SENSE_AC);  //per ADC samples
-  intmean_ADC_I_SENSE_AC += (mean_ADC_I_SENSE_AC+prevmean_ADC_I_SENSE_AC)/2; //Integrated over ADC period
+  dmean_ADC_I_SENSE_AC_dt = (mean_ADC_I_SENSE_AC-prevmean_ADC_I_SENSE_AC)*ADC1Freq;
+  intmean_ADC_I_SENSE_AC += (mean_ADC_I_SENSE_AC+prevmean_ADC_I_SENSE_AC)/2 * (1/ADC1Freq);
   
   #ifdef FourTUsed
   mean_ADC_I_SENSE_4T = ((float) sum_ADC_I_SENSE_4T) / ((float) MY_SAMPLING_NUMBER_ADC1/2);
   prevmean_ADC_I_SENSE_4T_AC = mean_ADC_I_SENSE_4T_AC;
   mean_ADC_I_SENSE_4T_AC = mean_ADC_I_SENSE_4T - (float) ADCmax/2;
-  dmean_ADC_I_SENSE_4T_AC_dt = (mean_ADC_I_SENSE_4T_AC-prevmean_ADC_I_SENSE_4T_AC);  //per ADC samples
-  intmean_ADC_I_SENSE_4T_AC += (mean_ADC_I_SENSE_4T_AC+prevmean_ADC_I_SENSE_4T_AC)/2; //Integrated over ADC period
+  dmean_ADC_I_SENSE_4T_AC_dt = (mean_ADC_I_SENSE_4T_AC-prevmean_ADC_I_SENSE_4T_AC)*ADC1Freq;
+  intmean_ADC_I_SENSE_4T_AC += (mean_ADC_I_SENSE_4T_AC+prevmean_ADC_I_SENSE_4T_AC)/2 * (1/ADC1Freq);
   #endif
 
   if (EnableADC1_DAC) {
-    dacOutput(mean_ADC_I_SENSE_AC, dmean_ADC_I_SENSE_AC_dt, intmean_ADC_I_SENSE_AC);
+    dacOutput(uOPp2p(mean_ADC_I_SENSE_AC, dmean_ADC_I_SENSE_AC_dt, intmean_ADC_I_SENSE_AC));
   }
+
 }
 
 
@@ -163,7 +204,7 @@ static void adccallback3(ADCDriver *adcp) {
 
   unsigned int i,j;
   uint32_t sum_ADC_EXTRA_1=0;
-  //uint32_t sum_ADC_EXTRA_2=0;
+  uint32_t sum_ADC_EXTRA_2=0;
   //float mean_ADC_I_SENSE, mean_ADC_I_SENSE_4T;
 
   if (adcIsBufferComplete(adcp)) {
@@ -175,25 +216,25 @@ static void adccallback3(ADCDriver *adcp) {
 
   for (i=0; i< MY_SAMPLING_NUMBER_ADC3/2;i++){
     sum_ADC_EXTRA_1 += sample_buff_ADC3[j+i*MY_NUM_CH_ADC3+1];
-  //  sum_ADC_EXTRA_2 += sample_buff_ADC3[j+i*MY_NUM_CH_ADC3+0];
+    sum_ADC_EXTRA_2 += sample_buff_ADC3[j+i*MY_NUM_CH_ADC3+0];
   }
 
   mean_ADC_EXTRA_1 = ((float) sum_ADC_EXTRA_1) / ((float) MY_SAMPLING_NUMBER_ADC3/2);
-  //mean_ADC_EXTRA_2 = ((float) sum_ADC_EXTRA_2) / ((float) MY_SAMPLING_NUMBER_ADC3/2);
+  mean_ADC_EXTRA_2 = ((float) sum_ADC_EXTRA_2) / ((float) MY_SAMPLING_NUMBER_ADC3/2);
 
   prevmean_ADC_EXTRA_1_AC = mean_ADC_EXTRA_1_AC;
-  //prevmean_ADC_EXTRA_2_AC = mean_ADC_EXTRA_2_AC;
+  prevmean_ADC_EXTRA_2_AC = mean_ADC_EXTRA_2_AC;
   mean_ADC_EXTRA_1_AC = mean_ADC_EXTRA_1 - (float) ADCmax/2;
-  //mean_ADC_EXTRA_2_AC = mean_ADC_EXTRA_2 - (float) ADCmax/2;
+  mean_ADC_EXTRA_2_AC = mean_ADC_EXTRA_2 - (float) ADCmax/2;
 
-  dmean_ADC_EXTRA_1_AC_dt = (mean_ADC_EXTRA_1_AC-prevmean_ADC_EXTRA_1_AC);  //per ADC samples
-  //dmean_ADC_EXTRA_2_AC_dt = (mean_ADC_EXTRA_2_AC-prevmean_ADC_EXTRA_2_AC); //per ADC samples
+  dmean_ADC_EXTRA_1_AC_dt = (mean_ADC_EXTRA_1_AC-prevmean_ADC_EXTRA_1_AC)*ADC1Freq;
+  dmean_ADC_EXTRA_2_AC_dt = (mean_ADC_EXTRA_2_AC-prevmean_ADC_EXTRA_2_AC)*ADC1Freq;
 
-  intmean_ADC_EXTRA_1_AC += (mean_ADC_EXTRA_1_AC+prevmean_ADC_EXTRA_1_AC)/2; //Integrated over ADC period
-  //intmean_ADC_EXTRA_2_AC += (mean_ADC_EXTRA_2_AC+prevmean_ADC_EXTRA_2_AC)/2; //Integrated over ADC period
+  intmean_ADC_EXTRA_1_AC += (mean_ADC_EXTRA_1_AC+prevmean_ADC_EXTRA_1_AC)/2 * (1/ADC1Freq);
+  intmean_ADC_EXTRA_2_AC += (mean_ADC_EXTRA_2_AC+prevmean_ADC_EXTRA_2_AC)/2 * (1/ADC1Freq);
 
   if (EnableADC3_DAC) {
-    dacOutput(mean_ADC_EXTRA_1_AC, dmean_ADC_EXTRA_1_AC_dt, intmean_ADC_EXTRA_1_AC);
+    dacOutput(uOPp2p(mean_ADC_EXTRA_1_AC, dmean_ADC_EXTRA_1_AC_dt, intmean_ADC_EXTRA_1_AC));
   }
 
 }
@@ -303,7 +344,7 @@ static THD_WORKING_AREA(waThdADC1, 512);
     */
   adcStart(&ADCD1, NULL);
 
-//  Strats an ADC1 continous conversion trigged with a period of 1/ADC1_Freq second
+//  Strats an ADC contnous conversion trigged with a period of 1/10000 second
   adcStartConversion(&ADCD1, &ADC1_conversion_group, sample_buff_ADC1, MY_SAMPLING_NUMBER_ADC1);
   gptStartContinuous(&GPTD3, ADC1_periods);
 
@@ -334,6 +375,8 @@ static THD_WORKING_AREA(waThdADC2, 512);
       mean += sample_buff_ADC2[ii];
     }
     mean /= MY_NUM_CH_ADC2 * MY_SAMPLING_NUMBER_ADC2;
+//    lastvalue_ADC2 = (float)mean;
+//    lastvalue_ADC2 = (int32_t)sample_buff_ADC2[0];
     lastvalue_ADC2 = (int32_t)mean;
     flag_ADC2 = TRUE;
   }
@@ -347,24 +390,22 @@ static THD_WORKING_AREA(waThdADC3, 512);
   (void) arg;
   chRegSetThreadName("ADC3 handler");
 
-  // Starting GPT3 driver used for triggig the ADC3
+  // Starting GPT3 driver used for triggig the ADC1
   gptStart(&GPTD3, &gpt3cfg1);
 
   /*
-    * Activates the ADC3 driver.
+    * Activates the ADC1 driver.
     */
   adcStart(&ADCD3, NULL);
 
-//  Starts an ADC continous conversion trigged with a period of 1/ADC3_Freq second
+//  Strats an ADC contnous conversion trigged with a period of 1/10000 second
   adcStartConversion(&ADCD3, &ADC3_conversion_group, sample_buff_ADC3, MY_SAMPLING_NUMBER_ADC3);
-  gptStartContinuous(&GPTD3, ADC3_periods);
+  gptStartContinuous(&GPTD3, ADC1_periods);
 
 }
 
 
 /*
- * Configures all the ADC pins
- * --------------------------------------------------------
  * Channels:                        Z-SIM                   DISCOVERY
  * PA0_SHUNT1 = I_SENSE, TP_I1:     PA0: ADC123 IN0
  * PA1_SHUNT2 = I_SENSE_4T, TP_I2:  PA1: ADC123 IN1
@@ -388,6 +429,8 @@ static THD_WORKING_AREA(waThdADC3, 512);
  */
 
 void adc_init(void) {
+
+
   //PA0: Analog
   palSetPadMode(ADC_SHUNT_GPIO, I_SENSE_PIN, PAL_MODE_INPUT_ANALOG);
   //PA1: Analog
@@ -410,15 +453,17 @@ void adc_init(void) {
   palSetPadMode(ADC_EXTRA_GPIO, ADC_EXTRA1_PIN, PAL_MODE_INPUT_ANALOG);
   //PC3: Analog
   palSetPadMode(ADC_EXTRA_GPIO, ADC_EXTRA2_PIN, PAL_MODE_INPUT_ANALOG);
+
+
+//  chThdCreateStatic(waThdADC2, sizeof(waThdADC2), NORMALPRIO, ThdADC2, NULL);
+//  chThdCreateStatic(waThdADC3, sizeof(waThdADC3), NORMALPRIO, ThdADC3, NULL);
+
 }
 
-
-// Starts thread for ADC1
 void adc1_start(void){
    chThdCreateStatic(waThdADC1, sizeof(waThdADC1), NORMALPRIO, ThdADC1, NULL);
 }
 
-// Starts thread for ADC3
 void adc3_start(void){
    chThdCreateStatic(waThdADC3, sizeof(waThdADC3), NORMALPRIO, ThdADC3, NULL);
 }
