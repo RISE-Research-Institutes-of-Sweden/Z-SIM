@@ -19,10 +19,10 @@ Copyright 2019/2020   Joel Svensson	svenssonjoel@yahoo.se
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
-#define zSIM TRUE
-//#define STM32F4DISC TRUE
+//#define zSIM TRUE
+#define STM32F4DISC TRUE
 
-#define FourTused TRUE
+//#define FourTused TRUE
 
 // Harware Configuration
 #define Rshunt 10.0e-3 //Ohm
@@ -116,7 +116,7 @@ Copyright 2019/2020   Joel Svensson	svenssonjoel@yahoo.se
 #define ADC1_periods 10
 #define ADC3_periods ADC1_periods
 
-#define ADC1Freq ((float) gpt3Freq) /((float) ADC1_periods);
-#define ADC3Freq ((float) gpt3Freq) /((float) ADC3_periods);
+#define ADC1Freq (((float) gpt3Freq) /((float) ADC1_periods))
+#define ADC3Freq (((float) gpt3Freq) /((float) ADC3_periods))
 
 #endif

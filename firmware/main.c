@@ -255,8 +255,10 @@ int main(void) {
     if (strncmp(command_str,"ADC1?",5)==0) {
       chprintf((BaseSequentialStream *)&SDU1,"ADC1a = %f\r\n", mean_ADC_I_SENSE);
       chprintf((BaseSequentialStream *)&SDU1,"ADC1a_delta = %f\r\n", mean_ADC_I_SENSE_AC);
+      #ifdef FourTused
       chprintf((BaseSequentialStream *)&SDU1,"ADC1b = %f\r\n", mean_ADC_I_SENSE_4T);
       chprintf((BaseSequentialStream *)&SDU1,"ADC1b_delta = %f\r\n", mean_ADC_I_SENSE_4T_AC);
+      #endif
       command_ok = true;
     }
 

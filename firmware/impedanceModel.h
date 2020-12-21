@@ -26,6 +26,6 @@ Copyright 2019/2020   Joel Svensson	svenssonjoel@yahoo.se
 
 extern float Rload, Lload, Cload;
 
-extern int16_t outputDACAmpCalc(float ADCvalue_AC, float dADCvalue_AC_dt, float intADCvalue_AC)
+extern int16_t outputDACAmpCalc(float ADCvalue_AC, float dADCvalue_AC_dt, float intADCvalue_AC);
 
 #endif

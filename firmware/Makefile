@@ -130,6 +130,7 @@ CSRC = $(ALLCSRC) \
        dcdc.c \
 			 adc.c \
 			 dac.c \
+       impedanceModel.c \
        $(CHIBIOS)/os/various/syscalls.c
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global

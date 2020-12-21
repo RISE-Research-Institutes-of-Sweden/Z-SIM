@@ -25,8 +25,9 @@ Copyright 2020   Anders Thorsén thorsenanders@yahoo.com
 #include "config.h"
 
 extern void dac_init(void);
-extern void dacOutput(float outputPeak2Peak);
-extern int16_t outputDACAmpCalc(float ADCvalue_AC, float dADCvalue_AC_dt, float intADCvalue_AC)
+extern void dacOutput(float ADCvalue_AC, float dADCvalue_AC_dt, float intADCvalue_AC);
+
+extern int16_t outputDACAmpCalc(float ADCvalue_AC, float dADCvalue_AC_dt, float intADCvalue_AC);
 
 extern void dac1Set(uint16_t dacOut);
 extern void dac2Set(uint16_t dacOut);

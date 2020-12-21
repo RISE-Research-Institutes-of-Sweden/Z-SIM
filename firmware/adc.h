@@ -25,13 +25,16 @@ Copyright 2019/2020   Joel Svensson	svenssonjoel@yahoo.se
 #include "config.h"
 
 extern float mean_ADC_I_SENSE_AC;
-extern float mean_ADC_I_SENSE_4T_AC;
 extern float prevmean_ADC_I_SENSE_AC;
-extern float prevmean_ADC_I_SENSE_4T_AC;
 extern float intmean_ADC_I_SENSE_AC;
-extern float intmean_ADC_I_SENSE_4T_AC;
 extern float dmean_ADC_I_SENSE_AC_dt;
+
+#ifdef FourTused
+extern float mean_ADC_I_SENSE_4T_AC;
+extern float prevmean_ADC_I_SENSE_4T_AC;
+extern float intmean_ADC_I_SENSE_4T_AC;
 extern float dmean_ADC_I_SENSE_4T_AC_dt;
+#endif
 
 extern float mean_ADC_EXTRA_1_AC;
 extern float mean_ADC_EXTRA_2_AC;
@@ -63,6 +66,6 @@ extern uint16_t loadConfig;
 
 extern void adc_init(void);
 extern void adc1_start(void);
-extern void dacOutput(float outputPeak2Peak);
+extern void dacOutput(float ADCvalue_AC, float dADCvalue_AC_dt, float intADCvalue_AC);
 
 #endif
