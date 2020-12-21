@@ -29,7 +29,7 @@ int16_t outputDACAmpCalc(float ADCvalue_AC, float dADCvalue_AC_dt, float intADCv
     outputDACAmp_ind = ((float) ADC1Freq) * GainAdc2Dac * ((float) Lload) / ((float) Rshunt) * dADCvalue_AC_dt; // Muliplication with ADC1Freq for correct time scale
     outputDACAmp_cap = 1/((float) ADC1Freq) * GainAdc2Dac * ( 1/(ADC1Freq*((float) Rshunt) * ((float) Cload)) * intADCvalue_AC); //
 
-    outputDACAmp = outputDACAmp_res + outputDACAmp_ind + outputDACAmp_cap;
+    outputDACAmp = outputDACAmp_res + outputDACAmp_ind; // + outputDACAmp_cap;
 
   return (int16_t) outputDACAmp;
 }

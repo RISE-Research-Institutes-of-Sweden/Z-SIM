@@ -19,8 +19,8 @@ Copyright 2019/2020   Joel Svensson	svenssonjoel@yahoo.se
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
-//#define zSIM TRUE
-#define STM32F4DISC TRUE
+#define zSIM TRUE
+//#define STM32F4DISC TRUE
 
 //#define FourTused TRUE
 

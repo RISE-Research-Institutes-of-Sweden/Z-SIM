@@ -59,7 +59,9 @@ float mean_ADC_EXTRA_1;
 float mean_ADC_EXTRA_2;
 // End for debugging
 
-float Rload = .2, Lload =1e-5 , Cload = 2e-7;
+float Rload = 1; //0.2;
+float Lload =0; //0.16e-3; //@200Hz
+float Cload = 2e7; //19.9e-6; //@200Hz
 uint16_t loadConfig = CAPACITIVE; //RESISTIVE, INDUCTIVE, CAPACITIVE
 
 
